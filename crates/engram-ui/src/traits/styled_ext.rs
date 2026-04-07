@@ -71,6 +71,13 @@ pub trait StyledExt: Styled + Sized {
     fn border_muted(self, cx: &App) -> Self {
         self.border_color(cx.theme().colors().border_variant)
     }
+
+    /// Apply the theme's keyboard-focus border color. Used by components
+    /// that grow a focus ring on `:focus` (text inputs, buttons on tab
+    /// navigation, etc).
+    fn border_focused(self, cx: &App) -> Self {
+        self.border_color(cx.theme().colors().border_focused)
+    }
 }
 
 impl<E: Styled + Sized> StyledExt for E {}

@@ -8,10 +8,11 @@ use std::cell::Cell;
 use std::rc::Rc;
 
 use engram::prelude::*;
+use engram::theme::hot_reload::ThemeWatcher;
 use gpui::{
     App, AppContext, Bounds, Context, Entity, FocusHandle, InteractiveElement, IntoElement,
-    ParentElement, Pixels, Render, SharedString, StatefulInteractiveElement, Styled, WeakEntity,
-    Window, WindowBounds, WindowOptions, canvas, div, prelude::FluentBuilder, px, size,
+    ParentElement, Pixels, Render, SharedString, StatefulInteractiveElement, Styled, Subscription,
+    WeakEntity, Window, WindowBounds, WindowOptions, canvas, div, prelude::FluentBuilder, px, size,
 };
 use gpui_platform::application;
 
@@ -52,6 +53,12 @@ struct Showcase {
     submitted_value: SharedString,
     // The text field entity
     text_field: Entity<TextField>,
+    // System appearance observer — kept alive to mirror OS dark/light
+    // onto the active theme.
+    _appearance_sub: Option<Subscription>,
+    // Live hot-reload watcher for the JSON theme directory. Edits to
+    // `crates/engram-ui/assets/themes/*.json` show up on the next frame.
+    _theme_watcher: Option<ThemeWatcher>,
 }
 
 impl Showcase {
@@ -91,6 +98,8 @@ impl Showcase {
             menu_trigger_bounds: Rc::new(Cell::new(None)),
             submitted_value: SharedString::default(),
             text_field,
+            _appearance_sub: None,
+            _theme_watcher: None,
         }
     }
 }
@@ -168,12 +177,14 @@ impl Render for Showcase {
             move |_event: &gpui::ClickEvent, _window: &mut Window, cx: &mut App| {
                 weak.update(cx, |this, cx| {
                     this.is_dark = !this.is_dark;
-                    let next = if this.is_dark {
-                        engram::theme::default_dark()
+                    let target = if this.is_dark {
+                        "Engram Dark"
                     } else {
-                        engram::theme::default_light()
+                        "Engram Light"
                     };
-                    engram::theme::set_theme(next, cx);
+                    // Route through the registry so any JSON-loaded overrides
+                    // for "Engram Dark" / "Engram Light" take effect here.
+                    let _ = engram::theme::activate_theme(target, cx);
                     cx.notify();
                 })
                 .ok();
@@ -895,13 +906,44 @@ fn main() {
         engram::theme::init(cx);
         engram::ui::init(cx);
 
+        // Watch the repo's canonical themes directory so edits to the
+        // JSON fixtures show up instantly in the showcase.
+        let themes_dir = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../engram-ui/assets/themes"
+        );
+        let mut theme_watcher =
+            match engram::theme::hot_reload::watch_themes_dir(themes_dir, cx) {
+                Ok(watcher) => Some(watcher),
+                Err(err) => {
+                    eprintln!("engram showcase: hot reload disabled: {err}");
+                    None
+                }
+            };
+
         let bounds = Bounds::centered(None, size(px(960.0), px(760.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 ..Default::default()
             },
-            |_window, cx| cx.new(Showcase::new),
+            |window, cx| {
+                // Mirror the OS light/dark appearance onto the active
+                // theme from the first frame onwards.
+                let appearance_sub = engram::theme::sync_with_system_appearance(
+                    Default::default(),
+                    window,
+                    cx,
+                );
+                let entity = cx.new(Showcase::new);
+                entity.update(cx, |showcase, cx| {
+                    showcase.is_dark =
+                        cx.theme().appearance == engram::theme::Appearance::Dark;
+                    showcase._appearance_sub = Some(appearance_sub);
+                    showcase._theme_watcher = theme_watcher.take();
+                });
+                entity
+            },
         )
         .unwrap();
 

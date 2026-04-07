@@ -8,4 +8,8 @@ license.workspace = true
 path = "src/theme.rs"
 
 [dependencies]
+anyhow.workspace = true
 gpui.workspace = true
+notify.workspace = true
+serde.workspace = true
+serde_json.workspace = true
