@@ -9,18 +9,43 @@
 //! [`Application`]. The showcase wires up [`crate::assets::Assets`] for that
 //! purpose.
 //!
+//! An [`Icon`] carries an [`IconSource`]: either a curated [`IconName`]
+//! (Embedded), a raster image file on disk (External), or an SVG string path
+//! resolved via the consumer app's AssetSource (ExternalSvg). This mirrors
+//! zed's `ui::IconSource` shape with one intentional divergence — engram's
+//! ExternalSvg routes through `svg().path(...)` (the AssetSource) rather
+//! than zed's `svg().external_path(...)` (a direct fs read), because the
+//! primary engram use case for external SVGs is a consumer app bundling
+//! its own brand icons into a combined AssetSource.
+//!
 //! Need an icon that isn't in the catalogue? Either drop the SVG into the
 //! consuming app's own asset source and use [`Icon::from_path`], or open a
 //! PR adding the variant.
 
+use std::path::Path;
 use std::sync::Arc;
 
 use engram_theme::{ActiveTheme, Color};
-use gpui::{App, IntoElement, Pixels, RenderOnce, SharedString, Window, prelude::*, px, svg};
+use gpui::{
+    App, IntoElement, Pixels, Rems, RenderOnce, SharedString, Window, img, prelude::*, px, rems,
+    svg,
+};
 use strum::IntoStaticStr;
 
+/// Conversion constant between [`Pixels`] and [`Rems`]. Matches gpui's
+/// default rem size. Used only for the `IconSize` preset → `Rems` conversion
+/// so the fixed-pixel presets round-trip to reasonable rem values.
+const BASE_REM_SIZE_PX: f32 = 16.0;
+
 /// Size of an [`Icon`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+///
+/// The fixed presets mirror zed's `IconSize` with one engram divergence:
+/// [`IconSize::Large`] (20px) — zed dropped it, engram keeps it because 20px
+/// is a real size in the engram visual language and removing it is churn
+/// for parity's sake. [`IconSize::Custom`] takes a [`Rems`] value so callers
+/// with specific layout needs can bypass the preset ramp without jumping to
+/// raw `svg()`.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub enum IconSize {
     /// 10px
     Indicator,
@@ -31,14 +56,21 @@ pub enum IconSize {
     /// 16px (default)
     #[default]
     Medium,
-    /// 20px
+    /// 20px — engram divergence from zed.
     Large,
     /// 48px
     XLarge,
+    /// A caller-specified size in [`Rems`].
+    Custom(Rems),
 }
 
 impl IconSize {
-    pub const fn pixels(self) -> Pixels {
+    /// Pixel size of the preset. For [`IconSize::Custom`], converts back to
+    /// pixels assuming the default 16px rem — a best-effort approximation
+    /// for call sites that still want a `Pixels` value (e.g. banner layout
+    /// indents). Use [`IconSize::rems`] instead when you're going through a
+    /// `Styled`/`svg()` API, which is rem-aware.
+    pub fn pixels(self) -> Pixels {
         match self {
             Self::Indicator => px(10.0),
             Self::XSmall => px(12.0),
@@ -46,6 +78,21 @@ impl IconSize {
             Self::Medium => px(16.0),
             Self::Large => px(20.0),
             Self::XLarge => px(48.0),
+            Self::Custom(r) => px(r.0 * BASE_REM_SIZE_PX),
+        }
+    }
+
+    /// Rem size of the preset. Used by [`Icon::render`] so custom sizes
+    /// flow through gpui's `svg().size(...)` without a pixel round-trip.
+    pub fn rems(self) -> Rems {
+        match self {
+            Self::Indicator => rems(10.0 / BASE_REM_SIZE_PX),
+            Self::XSmall => rems(12.0 / BASE_REM_SIZE_PX),
+            Self::Small => rems(14.0 / BASE_REM_SIZE_PX),
+            Self::Medium => rems(16.0 / BASE_REM_SIZE_PX),
+            Self::Large => rems(20.0 / BASE_REM_SIZE_PX),
+            Self::XLarge => rems(48.0 / BASE_REM_SIZE_PX),
+            Self::Custom(r) => r,
         }
     }
 }
@@ -216,31 +263,62 @@ impl IconName {
     }
 }
 
-/// An SVG icon resolved from the active [`AssetSource`](gpui::AssetSource).
+/// Where an [`Icon`] sources its pixels from.
+///
+/// Mirrors zed's `ui::IconSource`. See the module docs for the divergence
+/// on `ExternalSvg` rendering.
+#[derive(Debug, Clone)]
+pub enum IconSource {
+    /// A curated SVG from engram-ui's embedded bundle, keyed by
+    /// [`IconName`]. Resolved via `svg().path(name.path())` against the
+    /// consumer app's registered [`AssetSource`](gpui::AssetSource), which
+    /// must include [`crate::assets::Assets`] (directly or wrapped).
+    Embedded(IconName),
+    /// A raster image file on disk. Rendered through gpui's `img(path)`
+    /// so callers can use arbitrary PNG/JPG sources — typically a
+    /// user-supplied avatar or file-type thumbnail.
+    External(Arc<Path>),
+    /// An SVG at the given asset path. Rendered via `svg().path(...)`,
+    /// which routes through the consumer's AssetSource. Consumer apps that
+    /// ship brand/trademark icons outside engram's curated catalogue
+    /// combine their own assets with [`crate::assets::Assets`] under a
+    /// single AssetSource and reference them by path here.
+    ExternalSvg(SharedString),
+}
+
+impl From<IconName> for IconSource {
+    fn from(name: IconName) -> Self {
+        Self::Embedded(name)
+    }
+}
+
+/// An icon resolved from an [`IconSource`].
 #[derive(IntoElement)]
 pub struct Icon {
-    path: SharedString,
+    source: IconSource,
     size: IconSize,
     color: Color,
 }
 
 impl Icon {
-    pub fn new(name: IconName) -> Self {
+    /// Build an icon from anything that can become an [`IconSource`] — an
+    /// [`IconName`] (the common path, via `From<IconName> for IconSource`),
+    /// or an explicit `IconSource::External`/`ExternalSvg`.
+    pub fn new(source: impl Into<IconSource>) -> Self {
         Self {
-            path: SharedString::from(name.path()),
+            source: source.into(),
             size: IconSize::default(),
             color: Color::default(),
         }
     }
 
-    /// Construct an icon from a raw asset path. Useful for icons not in
-    /// [`IconName`] (e.g. extension-supplied SVGs).
+    /// Construct an icon from an asset path string. The path is routed
+    /// through the consumer's [`AssetSource`](gpui::AssetSource), so this
+    /// is the preferred hook for apps that bundle their own (e.g. brand)
+    /// SVGs alongside engram-ui's curated catalogue. Equivalent to
+    /// `Icon::new(IconSource::ExternalSvg(path.into()))`.
     pub fn from_path(path: impl Into<SharedString>) -> Self {
-        Self {
-            path: path.into(),
-            size: IconSize::default(),
-            color: Color::default(),
-        }
+        Self::new(IconSource::ExternalSvg(path.into()))
     }
 
     pub fn size(mut self, size: IconSize) -> Self {
@@ -267,10 +345,26 @@ impl RenderOnce for Icon {
             other => other.hsla(colors),
         };
 
-        svg()
-            .size(self.size.pixels())
-            .flex_none()
-            .path(self.path)
-            .text_color(hsla)
+        let size = self.size.rems();
+
+        match self.source {
+            IconSource::Embedded(name) => svg()
+                .size(size)
+                .flex_none()
+                .path(name.path())
+                .text_color(hsla)
+                .into_any_element(),
+            IconSource::ExternalSvg(path) => svg()
+                .size(size)
+                .flex_none()
+                .path(path)
+                .text_color(hsla)
+                .into_any_element(),
+            IconSource::External(path) => img(path)
+                .size(size)
+                .flex_none()
+                .text_color(hsla)
+                .into_any_element(),
+        }
     }
 }

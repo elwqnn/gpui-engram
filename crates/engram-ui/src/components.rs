@@ -31,7 +31,7 @@ pub use button::{
 pub use checkbox::{Checkbox, CheckboxSize};
 pub use disclosure::Disclosure;
 pub use divider::{Divider, DividerOrientation};
-pub use icon::{Icon, IconName, IconSize};
+pub use icon::{Icon, IconName, IconSize, IconSource};
 pub use image::Image;
 pub use indicator::Indicator;
 pub use keybinding::KeyBinding;

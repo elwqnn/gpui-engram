@@ -30,9 +30,9 @@ use engram_theme::{self, Radius, Spacing};
 use engram_ui::components::{
     Avatar, AvatarSize, Banner, Button, ButtonCommon, ButtonStyle, Checkbox, CheckboxSize, Chip,
     ChipStyle, CountBadge, Disclosure, Divider, Facepile, Headline, HeadlineSize, Icon,
-    IconButton, IconName, IconSize, Image, Indicator, KeyBinding, Label, LabelCommon, LabelSize,
-    List, ListItem, Menu, Modal, Notification, Popover, Scrollbar, Severity, Switch, Tab, TabBar,
-    TextField, TintColor, Tooltip, anchored_popover, h_flex, modal_overlay, v_flex,
+    IconButton, IconName, IconSize, IconSource, Image, Indicator, KeyBinding, Label, LabelCommon,
+    LabelSize, List, ListItem, Menu, Modal, Notification, Popover, Scrollbar, Severity, Switch,
+    Tab, TabBar, TextField, TintColor, Tooltip, anchored_popover, h_flex, modal_overlay, v_flex,
 };
 use engram_ui::traits::{Clickable, Disableable, StyledExt, ToggleState, Toggleable};
 use gpui::{
@@ -125,6 +125,23 @@ fn icon_renders_every_size(cx: &mut TestAppContext) {
             .child(Icon::new(IconName::Check).size(IconSize::Small))
             .child(Icon::new(IconName::Check).size(IconSize::Medium))
             .child(Icon::new(IconName::Check).size(IconSize::Large))
+            .child(Icon::new(IconName::Check).size(IconSize::Custom(gpui::rems(1.5))))
+            .into_any_element()
+    });
+}
+
+#[gpui::test]
+fn icon_source_variants_render(cx: &mut TestAppContext) {
+    // Exercises the three `IconSource` branches so any future wiring
+    // regression in the render match arms blows up at draw time. The
+    // external paths are mock strings — gpui's AssetSource resolution just
+    // no-ops on lookup failure, which is fine for a draw smoke test.
+    smoke(cx, |_, _| {
+        h_flex()
+            .gap(Spacing::Small.pixels())
+            .child(Icon::new(IconName::Check))
+            .child(Icon::new(IconSource::ExternalSvg("file:///mock/icon.svg".into())))
+            .child(Icon::from_path("brand/engram.svg"))
             .into_any_element()
     });
 }
