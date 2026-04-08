@@ -23,6 +23,8 @@ use crate::traits::{Clickable, Disableable, ToggleState, Toggleable};
 pub struct IconButton {
     base: ButtonLike,
     icon: IconName,
+    icon_color: Option<Color>,
+    icon_size: Option<IconSize>,
 }
 
 impl IconButton {
@@ -30,7 +32,23 @@ impl IconButton {
         Self {
             base: ButtonLike::new(id),
             icon,
+            icon_color: None,
+            icon_size: None,
         }
+    }
+
+    /// Override the icon color. When unset, the color is derived from the
+    /// button's disabled/selected state (mirrors zed's `IconButton::icon_color`).
+    pub fn icon_color(mut self, color: Color) -> Self {
+        self.icon_color = Some(color);
+        self
+    }
+
+    /// Override the icon size. When unset, the size is derived from the
+    /// button's [`ButtonSize`] (mirrors zed's `IconButton::icon_size`).
+    pub fn icon_size(mut self, size: IconSize) -> Self {
+        self.icon_size = Some(size);
+        self
     }
 }
 
@@ -109,10 +127,14 @@ impl RenderOnce for IconButton {
         let is_selected = self.base.selected;
         let size = self.base.size;
         let pad = padding_for(size);
-        let icon_size = icon_size_for(size);
+        let icon_size = self.icon_size.unwrap_or_else(|| icon_size_for(size));
 
+        // Disabled always wins; otherwise a caller-supplied `icon_color`
+        // overrides the state-derived default. This matches zed's IconButton.
         let icon_color = if is_disabled {
             Color::Disabled
+        } else if let Some(color) = self.icon_color {
+            color
         } else if is_selected {
             Color::Selected
         } else {

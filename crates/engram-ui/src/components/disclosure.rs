@@ -1,24 +1,27 @@
 //! Disclosure — a chevron toggle for expandable sections / tree rows.
 //!
-//! Tracks Zed's `Disclosure` shape: an interactive icon button that flips
-//! between a "closed" and "opened" chevron and emits a click event. We
-//! render it inline rather than wrapping our [`IconButton`] so the icon
-//! coloring stays consistent with neighboring list rows.
+//! Mirrors zed's `ui::Disclosure`: a small, ghost-background icon button
+//! that flips between a "closed" and "opened" chevron. Previously rendered
+//! its own `div` with ad-hoc hover/active palettes; now delegates to
+//! [`IconButton`] so hover/active/selected/disabled chrome stays in lockstep
+//! with every other button in the library and only lives in one place.
 
 use std::rc::Rc;
 
-use engram_theme::{ActiveTheme, Color, Radius, Spacing};
+use engram_theme::Color;
 use gpui::{
-    App, ClickEvent, CursorStyle, ElementId, IntoElement, RenderOnce, Window, div, prelude::*,
+    App, ClickEvent, CursorStyle, ElementId, IntoElement, RenderOnce, Window, prelude::*,
 };
 
-use crate::components::icon::{Icon, IconName, IconSize};
-use crate::traits::{ClickHandler, Clickable, Disableable};
+use crate::components::button::{ButtonCommon, ButtonSize, ButtonStyle, IconButton};
+use crate::components::icon::{IconName, IconSize};
+use crate::traits::{ClickHandler, Clickable, Disableable, ToggleState, Toggleable};
 
 #[derive(IntoElement)]
 pub struct Disclosure {
     id: ElementId,
     is_open: bool,
+    selected: bool,
     disabled: bool,
     opened_icon: IconName,
     closed_icon: IconName,
@@ -31,6 +34,7 @@ impl Disclosure {
         Self {
             id: id.into(),
             is_open,
+            selected: false,
             disabled: false,
             opened_icon: IconName::ChevronDown,
             closed_icon: IconName::ChevronRight,
@@ -57,6 +61,13 @@ impl Disableable for Disclosure {
     }
 }
 
+impl Toggleable for Disclosure {
+    fn toggle_state(mut self, state: impl Into<ToggleState>) -> Self {
+        self.selected = state.into().selected();
+        self
+    }
+}
+
 impl Clickable for Disclosure {
     fn on_click(
         mut self,
@@ -73,29 +84,23 @@ impl Clickable for Disclosure {
 }
 
 impl RenderOnce for Disclosure {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let colors = cx.theme().colors();
-        let icon_color = if self.disabled { Color::Disabled } else { Color::Muted };
-        let icon = if self.is_open { self.opened_icon } else { self.closed_icon };
+    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        let icon = if self.is_open {
+            self.opened_icon
+        } else {
+            self.closed_icon
+        };
 
-        div()
-            .id(self.id)
-            .flex()
-            .items_center()
-            .justify_center()
-            .p(Spacing::XXSmall.pixels())
-            .rounded(Radius::Small.pixels())
-            .when(!self.disabled, |this| {
-                this.cursor(self.cursor_style)
-                    .hover(|s| s.bg(colors.ghost_element_hover))
-                    .active(|s| s.bg(colors.ghost_element_active))
+        IconButton::new(self.id, icon)
+            .style(ButtonStyle::Subtle)
+            .size(ButtonSize::Compact)
+            .icon_color(Color::Muted)
+            .icon_size(IconSize::Small)
+            .disabled(self.disabled)
+            .toggle_state(self.selected)
+            .cursor_style(self.cursor_style)
+            .when_some(self.on_toggle, |this, handler| {
+                this.on_click(move |event, window, cx| handler(event, window, cx))
             })
-            .child(Icon::new(icon).size(IconSize::Small).color(icon_color))
-            .when_some(
-                (!self.disabled).then_some(self.on_toggle).flatten(),
-                |this, handler| {
-                    this.on_click(move |event, window, cx| handler(event, window, cx))
-                },
-            )
     }
 }
