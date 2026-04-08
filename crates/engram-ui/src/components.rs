@@ -24,7 +24,10 @@ pub mod tooltip;
 
 pub use avatar::{Avatar, AvatarSize, Chip, ChipStyle, CountBadge, Facepile};
 pub use banner::{Banner, Notification, Severity};
-pub use button::{Button, ButtonSize, ButtonStyle, IconButton};
+pub use button::{
+    Button, ButtonCommon, ButtonLike, ButtonSize, ButtonStyle, IconButton, SelectableButton,
+    TintColor,
+};
 pub use checkbox::{Checkbox, CheckboxSize};
 pub use disclosure::Disclosure;
 pub use divider::{Divider, DividerOrientation};

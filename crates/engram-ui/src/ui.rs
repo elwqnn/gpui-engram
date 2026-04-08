@@ -35,12 +35,13 @@ pub mod prelude {
 
     pub use crate::assets::Assets;
     pub use crate::components::{
-        Avatar, AvatarSize, Banner, Button, ButtonSize, ButtonStyle, Checkbox, CheckboxSize,
-        Chip, ChipStyle, CountBadge, Disclosure, Divider, DividerOrientation, Facepile, Icon,
-        IconButton, IconName, IconSize, Image, Indicator, KeyBinding, Label, List, ListItem,
-        Menu, MenuItem, Modal, Notification, Popover, Scrollbar, ScrollbarAxis, Severity, Switch,
-        Tab, TabBar, TextField, TextFieldSubmitEvent, Tooltip, anchored_popover, h_flex,
-        modal_overlay, text_field, v_flex,
+        Avatar, AvatarSize, Banner, Button, ButtonCommon, ButtonLike, ButtonSize, ButtonStyle,
+        Checkbox, CheckboxSize, Chip, ChipStyle, CountBadge, Disclosure, Divider,
+        DividerOrientation, Facepile, Icon, IconButton, IconName, IconSize, Image, Indicator,
+        KeyBinding, Label, List, ListItem, Menu, MenuItem, Modal, Notification, Popover,
+        Scrollbar, ScrollbarAxis, SelectableButton, Severity, Switch, Tab, TabBar, TextField,
+        TextFieldSubmitEvent, TintColor, Tooltip, anchored_popover, h_flex, modal_overlay,
+        text_field, v_flex,
     };
     pub use crate::styles::ElevationIndex;
     pub use crate::traits::{Clickable, Disableable, StyledExt, ToggleState, Toggleable};

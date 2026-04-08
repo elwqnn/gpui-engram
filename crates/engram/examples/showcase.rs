@@ -277,9 +277,37 @@ impl Render for Showcase {
                 h_flex()
                     .gap(Spacing::Medium.pixels())
                     .child(Button::new("btn-filled", "Filled").style(ButtonStyle::Filled))
-                    .child(Button::new("btn-ghost", "Ghost").style(ButtonStyle::Ghost))
+                    .child(Button::new("btn-subtle", "Subtle").style(ButtonStyle::Subtle))
                     .child(Button::new("btn-outlined", "Outlined").style(ButtonStyle::Outlined))
-                    .child(Button::new("btn-primary", "Primary").style(ButtonStyle::Primary)),
+                    .child(
+                        Button::new("btn-outlined-ghost", "Outlined ghost")
+                            .style(ButtonStyle::OutlinedGhost),
+                    )
+                    .child(
+                        Button::new("btn-transparent", "Transparent")
+                            .style(ButtonStyle::Transparent),
+                    ),
+            ))
+            .child(section(
+                "Button tints",
+                h_flex()
+                    .gap(Spacing::Medium.pixels())
+                    .child(
+                        Button::new("btn-tint-accent", "Accent")
+                            .style(ButtonStyle::Tinted(TintColor::Accent)),
+                    )
+                    .child(
+                        Button::new("btn-tint-success", "Success")
+                            .style(ButtonStyle::Tinted(TintColor::Success)),
+                    )
+                    .child(
+                        Button::new("btn-tint-warning", "Warning")
+                            .style(ButtonStyle::Tinted(TintColor::Warning)),
+                    )
+                    .child(
+                        Button::new("btn-tint-error", "Error")
+                            .style(ButtonStyle::Tinted(TintColor::Error)),
+                    ),
             ))
             .child(section(
                 "Button sizes",
@@ -299,7 +327,7 @@ impl Render for Showcase {
                     .child(
                         Button::new("btn-pin", if self.button_pin_toggled { "Pinned" } else { "Pin" })
                             .icon(IconName::Pin)
-                            .style(ButtonStyle::Ghost)
+                            .style(ButtonStyle::Subtle)
                             .toggle_state(self.button_pin_toggled)
                             .on_click(bool_toggle(&weak, |this| &mut this.button_pin_toggled)),
                     ),
@@ -311,7 +339,7 @@ impl Render for Showcase {
                     .child(IconButton::new("ib-filled", IconName::Settings))
                     .child(
                         IconButton::new("ib-ghost", IconName::MagnifyingGlass)
-                            .style(ButtonStyle::Ghost),
+                            .style(ButtonStyle::Subtle),
                     )
                     .child(IconButton::new("ib-out", IconName::Plus).style(ButtonStyle::Outlined))
                     .child(
@@ -323,7 +351,7 @@ impl Render for Showcase {
                                 IconName::Star
                             },
                         )
-                        .style(ButtonStyle::Ghost)
+                        .style(ButtonStyle::Subtle)
                         .toggle_state(self.icon_button_starred)
                         .on_click(bool_toggle(&weak, |this| &mut this.icon_button_starred)),
                     )
@@ -404,12 +432,12 @@ impl Render for Showcase {
                     )
                     .child(
                         Button::new("btn-tip-meta", "With meta")
-                            .style(ButtonStyle::Ghost)
+                            .style(ButtonStyle::Subtle)
                             .tooltip(Tooltip::with_meta("Save file", "Ctrl+S")),
                     )
                     .child(
                         IconButton::new("ib-tip", IconName::Settings)
-                            .style(ButtonStyle::Ghost)
+                            .style(ButtonStyle::Subtle)
                             .tooltip(Tooltip::text("Settings")),
                     ),
             ))
@@ -591,7 +619,7 @@ impl Render for Showcase {
                                 .description("Engram 0.2 is ready to install.")
                                 .action(
                                     Button::new("banner-update", "Update")
-                                        .style(ButtonStyle::Primary)
+                                        .style(ButtonStyle::Tinted(TintColor::Accent))
                                         .size(ButtonSize::Compact),
                                 )
                                 .on_dismiss({
@@ -609,7 +637,7 @@ impl Render for Showcase {
                     .when(!self.banner_visible, |this| {
                         this.child(
                             Button::new("banner-restore", "Restore banner")
-                                .style(ButtonStyle::Ghost)
+                                .style(ButtonStyle::Subtle)
                                 .size(ButtonSize::Compact)
                                 .on_click(set_field(&weak, true, |this| &mut this.banner_visible)),
                         )
@@ -758,7 +786,7 @@ impl Render for Showcase {
                     .gap(Spacing::Small.pixels())
                     .child(
                         Button::new("btn-open-modal", "Open modal")
-                            .style(ButtonStyle::Primary)
+                            .style(ButtonStyle::Tinted(TintColor::Accent))
                             .on_click({
                                 let weak = weak.clone();
                                 move |_event, window, cx| {
@@ -808,7 +836,7 @@ impl Render for Showcase {
                                 .justify_end()
                                 .child(
                                     Button::new("modal-cancel", "Cancel")
-                                        .style(ButtonStyle::Ghost)
+                                        .style(ButtonStyle::Subtle)
                                         .on_click(set_field(
                                             &weak_for_buttons,
                                             false,
@@ -817,7 +845,7 @@ impl Render for Showcase {
                                 )
                                 .child(
                                     Button::new("modal-delete", "Delete")
-                                        .style(ButtonStyle::Primary)
+                                        .style(ButtonStyle::Tinted(TintColor::Accent))
                                         .on_click(set_field(
                                             &weak_for_buttons,
                                             false,

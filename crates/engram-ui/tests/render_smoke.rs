@@ -28,11 +28,11 @@ use std::cell::RefCell;
 
 use engram_theme::{self, Radius, Spacing, TextSize};
 use engram_ui::components::{
-    Avatar, AvatarSize, Banner, Button, ButtonStyle, Checkbox, CheckboxSize, Chip, ChipStyle,
-    CountBadge, Disclosure, Divider, Facepile, Icon, IconButton, IconName, IconSize, Image,
-    Indicator, KeyBinding, Label, List, ListItem, Menu, Modal, Notification, Popover, Scrollbar,
-    Severity, Switch, Tab, TabBar, TextField, Tooltip, anchored_popover, h_flex, modal_overlay,
-    v_flex,
+    Avatar, AvatarSize, Banner, Button, ButtonCommon, ButtonStyle, Checkbox, CheckboxSize, Chip,
+    ChipStyle, CountBadge, Disclosure, Divider, Facepile, Icon, IconButton, IconName, IconSize,
+    Image, Indicator, KeyBinding, Label, List, ListItem, Menu, Modal, Notification, Popover,
+    Scrollbar, Severity, Switch, Tab, TabBar, TextField, TintColor, Tooltip, anchored_popover,
+    h_flex, modal_overlay, v_flex,
 };
 use engram_ui::traits::{Clickable, Disableable, StyledExt, ToggleState, Toggleable};
 use gpui::{
@@ -85,9 +85,16 @@ fn button_renders_every_style(cx: &mut TestAppContext) {
         h_flex()
             .gap(Spacing::Small.pixels())
             .child(Button::new("btn-filled", "Filled"))
-            .child(Button::new("btn-ghost", "Ghost").style(ButtonStyle::Ghost))
+            .child(Button::new("btn-subtle", "Subtle").style(ButtonStyle::Subtle))
             .child(Button::new("btn-outlined", "Outlined").style(ButtonStyle::Outlined))
-            .child(Button::new("btn-primary", "Primary").style(ButtonStyle::Primary))
+            .child(
+                Button::new("btn-tinted-accent", "Accent")
+                    .style(ButtonStyle::Tinted(TintColor::Accent)),
+            )
+            .child(
+                Button::new("btn-tinted-error", "Delete")
+                    .style(ButtonStyle::Tinted(TintColor::Error)),
+            )
             .child(Button::new("btn-disabled", "Disabled").disabled(true))
             .child(Button::new("btn-icon", "With icon").icon(IconName::Check))
             .into_any_element()
@@ -393,7 +400,10 @@ fn modal_renders(cx: &mut TestAppContext) {
                 h_flex()
                     .gap(Spacing::Small.pixels())
                     .child(Button::new("cancel", "Cancel"))
-                    .child(Button::new("delete", "Delete").style(ButtonStyle::Primary)),
+                    .child(
+                        Button::new("delete", "Delete")
+                            .style(ButtonStyle::Tinted(TintColor::Error)),
+                    ),
             )
             .into_any_element()
     });
