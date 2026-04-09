@@ -230,19 +230,33 @@ impl Chip {
 impl RenderOnce for Chip {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors();
-        let (label_color, bg) = match self.style {
-            ChipStyle::Default => (Color::Default, colors.element_background),
-            ChipStyle::Accent => (Color::Accent, colors.element_background),
-            ChipStyle::Success => (Color::Success, colors.element_background),
-            ChipStyle::Warning => (Color::Warning, colors.element_background),
-            ChipStyle::Error => (Color::Error, colors.element_background),
+        let status = &colors.status;
+        // The three status flavors pull their bg + border from `StatusColors`
+        // so the chip chrome reinforces the label color. `Default` and
+        // `Accent` keep the neutral element background — there's no
+        // "accent_background" token and a chip with a colored label on a
+        // neutral chip reads cleanly enough for those two cases.
+        let (label_color, bg, border) = match self.style {
+            ChipStyle::Default => (Color::Default, colors.element_background, colors.border),
+            ChipStyle::Accent => (Color::Accent, colors.element_background, colors.border),
+            ChipStyle::Success => (
+                Color::Success,
+                status.success_background,
+                status.success_border,
+            ),
+            ChipStyle::Warning => (
+                Color::Warning,
+                status.warning_background,
+                status.warning_border,
+            ),
+            ChipStyle::Error => (Color::Error, status.error_background, status.error_border),
         };
         div()
             .px(Spacing::Small.pixels())
             .py(px(1.0))
             .rounded(Radius::Full.pixels())
             .border_1()
-            .border_color(colors.border)
+            .border_color(border)
             .bg(bg)
             .child(
                 Label::new(self.label)

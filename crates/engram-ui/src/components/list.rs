@@ -27,9 +27,8 @@ use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::{h_flex, v_flex};
 use crate::traits::{
     ClickHandler, Clickable, Disableable, HoverHandler, MouseDownHandler, ToggleState, Toggleable,
+    TooltipBuilder,
 };
-
-type TooltipBuilder = Rc<dyn Fn(&mut Window, &mut App) -> AnyView + 'static>;
 
 /// Vertical density of a [`ListItem`].
 ///

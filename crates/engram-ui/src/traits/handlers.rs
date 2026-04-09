@@ -20,7 +20,7 @@
 
 use std::rc::Rc;
 
-use gpui::{App, ClickEvent, MouseDownEvent, Window};
+use gpui::{AnyView, App, ClickEvent, MouseDownEvent, Window};
 
 use crate::traits::ToggleState;
 
@@ -50,3 +50,9 @@ pub type HoverHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 /// secondary (right-click) actions where a richer event payload than
 /// [`ClickHandler`] is needed.
 pub type MouseDownHandler = Rc<dyn Fn(&MouseDownEvent, &mut Window, &mut App) + 'static>;
+
+/// Builder closure that lazily produces a tooltip view. Used by every
+/// component that exposes a `.tooltip(...)` builder method (today: ListItem
+/// and ButtonLike). The closure is invoked at hover time so the tooltip
+/// view is only created when actually needed.
+pub type TooltipBuilder = Rc<dyn Fn(&mut Window, &mut App) -> AnyView + 'static>;

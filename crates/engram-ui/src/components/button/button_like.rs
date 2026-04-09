@@ -30,7 +30,9 @@ use gpui::{
 use smallvec::SmallVec;
 
 use crate::styles::ElevationIndex;
-use crate::traits::{ClickHandler, Clickable, Disableable, StyledExt, ToggleState, Toggleable};
+use crate::traits::{
+    ClickHandler, Clickable, Disableable, StyledExt, ToggleState, Toggleable, TooltipBuilder,
+};
 
 /// Buttons that can swap their [`ButtonStyle`] when in the selected state.
 ///
@@ -297,8 +299,6 @@ pub enum ButtonSize {
     Default,
     Large,
 }
-
-type TooltipBuilder = Rc<dyn Fn(&mut Window, &mut App) -> AnyView + 'static>;
 
 /// Shared chrome behind every engram button. See the module docs.
 #[derive(IntoElement)]

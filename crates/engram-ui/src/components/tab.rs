@@ -25,7 +25,7 @@ use smallvec::SmallVec;
 
 use crate::components::icon::{Icon, IconName, IconSize};
 use crate::components::label::{Label, LabelCommon};
-use crate::components::stack::h_flex;
+use crate::components::stack::{h_flex, v_flex};
 use crate::traits::{ClickHandler, Disableable, ToggleState, Toggleable};
 
 /// One selectable tab inside a [`TabBar`].
@@ -153,9 +153,7 @@ impl RenderOnce for Tab {
             );
 
         // Wrap so the underline draws inside the tab bounds.
-        div()
-            .flex()
-            .flex_col()
+        v_flex()
             .child(row)
             .child(div().h(px(2.0)).bg(underline_color))
     }

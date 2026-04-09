@@ -43,6 +43,7 @@ use gpui::{
 };
 use smallvec::SmallVec;
 
+use crate::components::stack::v_flex;
 use crate::styles::ElevationIndex;
 use crate::traits::DismissHandler;
 
@@ -93,9 +94,7 @@ impl ParentElement for Popover {
 impl RenderOnce for Popover {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors();
-        div()
-            .flex()
-            .flex_col()
+        v_flex()
             .when_some(self.min_width, |this, w| this.min_w(w))
             .py(POPOVER_PADDING)
             .px(px(0.0))

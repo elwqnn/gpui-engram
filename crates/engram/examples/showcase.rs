@@ -17,8 +17,10 @@ use gpui::{
 use gpui_platform::application;
 
 struct Showcase {
-    // Theme appearance
-    is_dark: bool,
+    // Currently active theme name. Mirrors the active theme registered in
+    // `ThemeRegistry`; updated whenever the user picks a theme from the
+    // header bar (which also drops the system-appearance subscription).
+    selected_theme: SharedString,
     // Checkboxes (one per size + a tri-state)
     checkbox_small: ToggleState,
     checkbox_default: ToggleState,
@@ -107,7 +109,7 @@ impl Showcase {
         })
         .detach();
         Self {
-            is_dark: true,
+            selected_theme: cx.theme().name.clone(),
             checkbox_small: ToggleState::Selected,
             checkbox_default: ToggleState::Unselected,
             checkbox_large: ToggleState::Selected,
@@ -201,25 +203,11 @@ impl Render for Showcase {
         let colors = cx.theme().colors();
         let weak = cx.entity().downgrade();
 
-        let is_dark = self.is_dark;
-        let toggle_theme = {
-            let weak = weak.clone();
-            move |_event: &gpui::ClickEvent, _window: &mut Window, cx: &mut App| {
-                weak.update(cx, |this, cx| {
-                    this.is_dark = !this.is_dark;
-                    let target = if this.is_dark {
-                        "Engram Dark"
-                    } else {
-                        "Engram Light"
-                    };
-                    // Route through the registry so any JSON-loaded overrides
-                    // for "Engram Dark" / "Engram Light" take effect here.
-                    let _ = engram::theme::activate_theme(target, cx);
-                    cx.notify();
-                })
-                .ok();
-            }
-        };
+        // Pull every theme registered in the global registry — built-in
+        // engram + any JSON themes loaded from `Assets` in `main()`. The
+        // selector below renders one button per entry.
+        let theme_names = engram::theme::ThemeRegistry::global(cx).names();
+        let selected_theme = self.selected_theme.clone();
 
         v_flex()
             .id("showcase-root")
@@ -239,13 +227,38 @@ impl Render for Showcase {
                             .size(HeadlineSize::Medium),
                     )
                     .child(
-                        Button::new(
-                            "btn-theme",
-                            if is_dark { "Switch to light" } else { "Switch to dark" },
-                        )
-                        .icon(if is_dark { IconName::Eye } else { IconName::EyeOff })
-                        .style(ButtonStyle::Outlined)
-                        .on_click(toggle_theme),
+                        h_flex()
+                            .gap(Spacing::Small.pixels())
+                            .children(theme_names.into_iter().map(|name| {
+                                let is_current = name == selected_theme;
+                                let id =
+                                    SharedString::from(format!("btn-theme-{name}"));
+                                let label = name.clone();
+                                let weak = weak.clone();
+                                let target = name.clone();
+                                Button::new(id, label)
+                                    .style(if is_current {
+                                        ButtonStyle::Filled
+                                    } else {
+                                        ButtonStyle::Subtle
+                                    })
+                                    .toggle_state(is_current)
+                                    .on_click(move |_event, _window, cx| {
+                                        let target = target.clone();
+                                        weak.update(cx, |this, cx| {
+                                            // Stop mirroring the OS appearance
+                                            // so an explicit user pick sticks.
+                                            this._appearance_sub = None;
+                                            if engram::theme::activate_theme(&target, cx)
+                                                .is_ok()
+                                            {
+                                                this.selected_theme = target;
+                                                cx.notify();
+                                            }
+                                        })
+                                        .ok();
+                                    })
+                            })),
                     ),
             )
             // -------------------- Typography --------------------
@@ -988,6 +1001,44 @@ impl Showcase {
 }
 
 
+/// Walk every JSON file under `themes/` in the embedded `Assets` source,
+/// parse it as a [`engram::theme::Theme`], and insert it into the global
+/// [`engram::theme::ThemeRegistry`]. The built-in `Engram Dark` /
+/// `Engram Light` already live there from `engram::theme::init`, so this
+/// only adds the JSON-shipped extras (gruvbox at the moment).
+fn register_embedded_themes(cx: &mut App) {
+    use engram::theme::{Theme, ThemeRegistry};
+    use gpui::AssetSource;
+
+    let asset_paths = match Assets.list("themes/") {
+        Ok(paths) => paths,
+        Err(err) => {
+            eprintln!("engram showcase: failed to list embedded themes: {err}");
+            return;
+        }
+    };
+
+    for path in asset_paths {
+        if !path.ends_with(".json") {
+            continue;
+        }
+        match Assets.load(&path) {
+            Ok(Some(bytes)) => match Theme::from_json_bytes(&bytes) {
+                Ok(theme) => {
+                    ThemeRegistry::global_mut(cx).insert(theme);
+                }
+                Err(err) => {
+                    eprintln!("engram showcase: failed to parse {path}: {err}");
+                }
+            },
+            Ok(None) => {}
+            Err(err) => {
+                eprintln!("engram showcase: failed to load {path}: {err}");
+            }
+        }
+    }
+}
+
 /// Small helper for building a titled section in the showcase.
 fn section(title: &'static str, body: impl IntoElement) -> impl IntoElement {
     v_flex()
@@ -1004,6 +1055,12 @@ fn main() {
     application().with_assets(Assets).run(|cx: &mut App| {
         engram::theme::init(cx);
         engram::ui::init(cx);
+
+        // Load every JSON theme embedded in `engram_ui::Assets` and insert
+        // it into the registry, so the header bar selector can list them
+        // alongside the built-in defaults. Failures are non-fatal — a bad
+        // theme just doesn't appear in the picker.
+        register_embedded_themes(cx);
 
         // Watch the repo's canonical themes directory so edits to the
         // JSON fixtures show up instantly in the showcase.
@@ -1036,8 +1093,7 @@ fn main() {
                 );
                 let entity = cx.new(Showcase::new);
                 entity.update(cx, |showcase, cx| {
-                    showcase.is_dark =
-                        cx.theme().appearance == engram::theme::Appearance::Dark;
+                    showcase.selected_theme = cx.theme().name.clone();
                     showcase._appearance_sub = Some(appearance_sub);
                     showcase._theme_watcher = theme_watcher.take();
                 });

@@ -35,6 +35,7 @@ pub use clickable::Clickable;
 pub use disableable::Disableable;
 pub use handlers::{
     ClickHandler, DismissHandler, HoverHandler, MouseDownHandler, StringHandler, ToggleHandler,
+    TooltipBuilder,
 };
 pub use styled_ext::StyledExt;
 pub use toggleable::{ToggleState, Toggleable};

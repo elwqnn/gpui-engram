@@ -7,10 +7,10 @@
 
 use std::rc::Rc;
 
-use engram_theme::{ActiveTheme, Color, Radius, Spacing};
+use engram_theme::{ActiveTheme, Color, Radius, Spacing, StatusColors};
 use gpui::{
-    AnyElement, App, ClickEvent, IntoElement, ParentElement, RenderOnce, SharedString, Window,
-    div, prelude::*, px,
+    AnyElement, App, ClickEvent, Hsla, IntoElement, ParentElement, RenderOnce, SharedString,
+    Window, div, prelude::*, px,
 };
 use smallvec::SmallVec;
 
@@ -46,6 +46,29 @@ impl Severity {
             Self::Success => Color::Success,
             Self::Warning => Color::Warning,
             Self::Error => Color::Error,
+        }
+    }
+
+    /// The status-tinted surface background for this severity. Drives
+    /// `Banner`'s body fill so the chrome itself signals the severity, not
+    /// just the leading icon.
+    fn background(self, status: &StatusColors) -> Hsla {
+        match self {
+            Self::Info => status.info_background,
+            Self::Success => status.success_background,
+            Self::Warning => status.warning_background,
+            Self::Error => status.error_background,
+        }
+    }
+
+    /// The status-tinted border for this severity. Pairs with
+    /// [`Severity::background`] so the banner outline reinforces the fill.
+    fn border(self, status: &StatusColors) -> Hsla {
+        match self {
+            Self::Info => status.info_border,
+            Self::Success => status.success_border,
+            Self::Warning => status.warning_border,
+            Self::Error => status.error_border,
         }
     }
 }
@@ -95,6 +118,8 @@ impl RenderOnce for Banner {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors();
         let severity_color = self.severity.color();
+        let bg = self.severity.background(&colors.status);
+        let border = self.severity.border(&colors.status);
         // Indent the description so it lines up under the title text
         // (skipping past where the icon sits in the row above).
         let description_indent = IconSize::Small.pixels() + Spacing::Medium.pixels();
@@ -112,8 +137,8 @@ impl RenderOnce for Banner {
             .py(Spacing::Small.pixels())
             .rounded(Radius::Medium.pixels())
             .border_1()
-            .border_color(colors.border)
-            .bg(colors.surface_background)
+            .border_color(border)
+            .bg(bg)
             .child(
                 v_flex()
                     .flex_grow()

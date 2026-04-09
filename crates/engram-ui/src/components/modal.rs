@@ -111,7 +111,7 @@ impl RenderOnce for Modal {
             .when_some(self.title, |this, title| {
                 this.child(Label::new(title).size(LabelSize::Large))
             })
-            .child(div().flex().flex_col().gap(Spacing::Small.pixels()).children(self.children))
+            .child(v_flex().gap(Spacing::Small.pixels()).children(self.children))
             .when_some(self.footer, |this, footer| this.child(footer))
     }
 }

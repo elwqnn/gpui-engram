@@ -675,6 +675,38 @@ fn styled_ext_elevation_renders(cx: &mut TestAppContext) {
     });
 }
 
+#[gpui::test]
+fn json_theme_registry_pipeline_renders(cx: &mut TestAppContext) {
+    // Proves the JSON → ThemeRegistry → activate_theme → component-render
+    // pipeline end-to-end. Loads gruvbox_dark.json from the embedded asset
+    // bundle, parses it via `Theme::from_json_bytes`, inserts it into the
+    // global registry, switches the active theme to it, and then draws a
+    // Banner per status hue plus an accent Indicator. Catches drift between
+    // `default_dark`'s schema and the canonical JSON shape (status keys
+    // missing, refinement layer broken, etc.) — anything in that chain
+    // would either fail to parse or panic during the draw.
+    use gpui::AssetSource;
+    smoke(cx, |_, cx| {
+        let bytes = engram_ui::Assets
+            .load("themes/gruvbox_dark.json")
+            .expect("loading gruvbox_dark.json must not error")
+            .expect("gruvbox_dark.json must be present in the embedded asset bundle");
+        let theme = engram_theme::Theme::from_json_bytes(&bytes)
+            .expect("gruvbox_dark.json must parse as a Theme");
+        engram_theme::ThemeRegistry::global_mut(cx).insert(theme);
+        engram_theme::activate_theme("Gruvbox Dark", cx)
+            .expect("Gruvbox Dark must be registered after insert");
+        v_flex()
+            .gap(Spacing::Small.pixels())
+            .child(Banner::new(Severity::Info, "Info from JSON theme"))
+            .child(Banner::new(Severity::Success, "Success from JSON theme"))
+            .child(Banner::new(Severity::Warning, "Warning from JSON theme"))
+            .child(Banner::new(Severity::Error, "Error from JSON theme"))
+            .child(Indicator::dot().color(engram_theme::Color::Accent))
+            .into_any_element()
+    });
+}
+
 // Silence unused-import warnings if a test removes its last reference.
 #[allow(dead_code)]
 fn _keep_app_alive(_: &mut App) {}
