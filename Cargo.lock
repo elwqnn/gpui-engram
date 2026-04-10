@@ -1495,6 +1495,7 @@ dependencies = [
  "anyhow",
  "engram-theme",
  "gpui",
+ "image",
  "rust-embed",
  "smallvec",
  "strum",
@@ -5165,6 +5166,18 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "story"
+version = "0.1.0"
+dependencies = [
+ "engram",
+ "engram-theme",
+ "engram-ui",
+ "gpui",
+ "gpui_platform",
+ "strum",
+]
 
 [[package]]
 name = "strict-num"

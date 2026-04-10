@@ -4,6 +4,7 @@ members = [
     "crates/engram",
     "crates/engram-theme",
     "crates/engram-ui",
+    "crates/story",
 ]
 exclude = ["reference"]
 
@@ -18,6 +19,7 @@ engram-ui = { path = "crates/engram-ui" }
 gpui = { git = "https://github.com/zed-industries/zed", branch = "main" }
 gpui_platform = { git = "https://github.com/zed-industries/zed", branch = "main", features = ["wayland", "x11"] }
 anyhow = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 notify = "8"
 rust-embed = { version = "8", features = ["include-exclude"] }
 serde = { version = "1", features = ["derive"] }

@@ -13,12 +13,11 @@
 
 use engram_theme::{ActiveTheme, Color, Radius, Spacing};
 use gpui::{
-    App, Hsla, ImageSource, IntoElement, ParentElement, Pixels, RenderOnce, SharedString, Window,
-    div, hsla, prelude::*, px,
+    App, Hsla, ImageSource, IntoElement, ParentElement, Pixels, RenderOnce, SharedString, Styled,
+    Window, div, hsla, img, prelude::*, px,
 };
 use smallvec::SmallVec;
 
-use crate::components::image::Image;
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
 
@@ -133,13 +132,17 @@ impl RenderOnce for Avatar {
         div()
             .size(diameter)
             .rounded_full()
-            .overflow_hidden()
             .bg(bg)
             .flex()
             .items_center()
             .justify_center()
             .when_some(image, |this, source| {
-                this.child(Image::new(source).size(diameter).rounded_full())
+                this.child(
+                    img(source)
+                        .size(diameter)
+                        .rounded_full()
+                        .bg(bg),
+                )
             })
             .when(!has_image, |this| {
                 this.child(
@@ -302,7 +305,7 @@ impl RenderOnce for CountBadge {
             .child(
                 Label::new(label)
                     .size(LabelSize::XSmall)
-                    .color(Color::Custom(hsla(0.0, 0.0, 1.0, 1.0))),
+                    .color(Color::Custom(colors.background)),
             )
     }
 }

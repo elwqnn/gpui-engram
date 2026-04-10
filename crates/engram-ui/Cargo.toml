@@ -11,6 +11,7 @@ path = "src/ui.rs"
 anyhow.workspace = true
 engram-theme.workspace = true
 gpui.workspace = true
+image.workspace = true
 rust-embed.workspace = true
 smallvec.workspace = true
 strum.workspace = true

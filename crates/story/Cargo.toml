@@ -1,0 +1,17 @@
+[package]
+name = "story"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "story"
+path = "src/story.rs"
+
+[dependencies]
+engram = { path = "../engram" }
+engram-theme.workspace = true
+engram-ui.workspace = true
+gpui.workspace = true
+gpui_platform.workspace = true
+strum.workspace = true

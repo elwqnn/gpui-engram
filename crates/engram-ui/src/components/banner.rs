@@ -123,16 +123,8 @@ impl RenderOnce for Banner {
         // Indent the description so it lines up under the title text
         // (skipping past where the icon sits in the row above).
         let description_indent = IconSize::Small.pixels() + Spacing::Medium.pixels();
-        let has_description = self.description.is_some();
-        h_flex()
+        div()
             .w_full()
-            // When a description wraps below the title, the row containing
-            // [Icon|Title] sits at the top of the v_flex; top-aligning the
-            // outer row keeps any trailing actions / dismiss button glued
-            // to the same line as the title rather than centering against
-            // the whole content block.
-            .when(has_description, |this| this.items_start())
-            .gap(Spacing::Medium.pixels())
             .px(Spacing::Medium.pixels())
             .py(Spacing::Small.pixels())
             .rounded(Radius::Medium.pixels())
@@ -141,20 +133,37 @@ impl RenderOnce for Banner {
             .bg(bg)
             .child(
                 v_flex()
-                    .flex_grow()
                     .gap(px(2.0))
                     .child(
-                        // Icon and title share an inner h_flex so they
-                        // ride on the same baseline via items_center —
-                        // no top-alignment guesswork against line metrics.
+                        // Title row: icon, title, spacer, actions, dismiss
+                        // all on one line so they stay vertically aligned.
                         h_flex()
+                            .items_center()
                             .gap(Spacing::Medium.pixels())
                             .child(
                                 Icon::new(self.severity.icon())
                                     .size(IconSize::Small)
                                     .color(severity_color),
                             )
-                            .child(Label::new(self.title)),
+                            .child(Label::new(self.title))
+                            .child(div().flex_1())
+                            .children(self.actions)
+                            .when_some(self.on_dismiss, |this, dismiss| {
+                                this.child(
+                                    div()
+                                        .id("engram-banner-dismiss")
+                                        .cursor_pointer()
+                                        .ml(Spacing::Small.pixels())
+                                        .child(
+                                            Icon::new(IconName::Close)
+                                                .size(IconSize::Small)
+                                                .color(Color::Muted),
+                                        )
+                                        .on_click(move |event, window, cx| {
+                                            dismiss(event, window, cx)
+                                        }),
+                                )
+                            }),
                     )
                     .when_some(self.description, |this, desc| {
                         this.child(
@@ -166,21 +175,6 @@ impl RenderOnce for Banner {
                         )
                     }),
             )
-            .children(self.actions)
-            .when_some(self.on_dismiss, |this, dismiss| {
-                this.child(
-                    div()
-                        .id("engram-banner-dismiss")
-                        .cursor_pointer()
-                        .ml(Spacing::Small.pixels())
-                        .child(
-                            Icon::new(IconName::Close)
-                                .size(IconSize::Small)
-                                .color(Color::Muted),
-                        )
-                        .on_click(move |event, window, cx| dismiss(event, window, cx)),
-                )
-            })
     }
 }
 
