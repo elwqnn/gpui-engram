@@ -9,6 +9,7 @@ pub mod copy_button;
 pub mod decorated_icon;
 pub mod disclosure;
 pub mod divider;
+pub mod dropdown_menu;
 pub mod gradient_fade;
 pub mod headline;
 pub mod highlighted_label;

@@ -30,7 +30,8 @@ use engram_theme::{self, Radius, Spacing};
 use engram_ui::components::{
     Avatar, AvatarSize, Banner, BorderPosition, Button, ButtonCommon, ButtonLink, ButtonStyle,
     Callout, Checkbox, CheckboxSize, Chip, ChipStyle, CircularProgress, CopyButton, CountBadge,
-    DecoratedIcon, Disclosure, Divider, Facepile, GradientFade, Headline, HeadlineSize,
+    DecoratedIcon, Disclosure, Divider, DropdownMenu, Facepile, GradientFade, Headline,
+    HeadlineSize,
     HighlightedLabel, Icon, IconButton, IconDecoration, IconName, IconSize, IconSource, Image,
     Indicator, KeyBinding, KeybindingHint, Label, LabelCommon, LabelSize, List, ListItem,
     ListItemSpacing, Menu,
@@ -499,6 +500,19 @@ fn menu_select_next_advances_cursor(cx: &mut TestAppContext) {
     });
     vtx.update(|_, cx| {
         assert_eq!(menu.read(cx).selected_index(), Some(2));
+    });
+}
+
+#[gpui::test]
+fn dropdown_menu_renders(cx: &mut TestAppContext) {
+    smoke(cx, |_, cx| {
+        cx.new(|cx| {
+            DropdownMenu::new("dd", "Pick one", cx, |menu| {
+                menu.entry("a", "Alpha", |_, _, _| {})
+                    .entry("b", "Beta", |_, _, _| {})
+            })
+        })
+        .into_any_element()
     });
 }
 

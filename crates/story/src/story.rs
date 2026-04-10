@@ -71,6 +71,7 @@ pub static STORIES: &[StoryEntry] = &[
     StoryEntry { name: "Switch", category: StoryCategory::Inputs, build: stories::switch::build },
     StoryEntry { name: "TextField", category: StoryCategory::Inputs, build: stories::text_field::build },
     StoryEntry { name: "Disclosure", category: StoryCategory::Inputs, build: stories::disclosure::build },
+    StoryEntry { name: "DropdownMenu", category: StoryCategory::Inputs, build: stories::dropdown_menu::build },
     // Data Display
     StoryEntry { name: "List", category: StoryCategory::DataDisplay, build: stories::list::build },
     StoryEntry { name: "TreeView", category: StoryCategory::DataDisplay, build: stories::tree_view::build },
