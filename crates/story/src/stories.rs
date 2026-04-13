@@ -18,6 +18,7 @@ pub mod icon_button;
 pub mod image;
 pub mod indicator;
 pub mod keybinding;
+pub mod keybinding_hint;
 pub mod label;
 pub mod list;
 pub mod menu;
