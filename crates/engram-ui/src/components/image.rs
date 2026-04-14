@@ -129,19 +129,37 @@ impl RenderOnce for Image {
 /// Load an image from disk and center-crop it to the largest square.
 ///
 /// Returns an [`ImageSource`] backed by pre-cropped pixel data. The crop
-/// happens once at call time — after that the GPU texture is cached like
-/// any other image. Use this when you need `rounded_full()` on a
-/// non-square source image so the circle fills completely without
+/// and downscale happen once at call time — after that the GPU texture is
+/// cached like any other image. Use this when you need `rounded_full()` on
+/// a non-square source image so the circle fills completely without
 /// stretching.
+///
+/// Large images are downscaled *before* RGBA conversion so the expensive
+/// pixel buffer stays small. Without the early downscale, a 3888×2187 JPEG
+/// would allocate ~34MB for `to_rgba8()` alone — enough to freeze the main
+/// thread for 1–2 seconds.
 pub fn center_crop_square(path: impl AsRef<Path>) -> anyhow::Result<ImageSource> {
+    const MAX_DIM: u32 = 256;
+
     let data = std::fs::read(path.as_ref())?;
     let decoded = image::load_from_memory(&data)?;
-    let rgba = decoded.to_rgba8();
+
+    // Downscale the DynamicImage while it's still in its native color space.
+    // `resize` preserves aspect ratio, so a 3888×2187 source becomes ~456×256
+    // — the subsequent RGBA conversion allocates ~467KB instead of ~34MB.
+    let small = if decoded.width() > MAX_DIM || decoded.height() > MAX_DIM {
+        decoded.resize(MAX_DIM, MAX_DIM, image::imageops::FilterType::Triangle)
+    } else {
+        decoded
+    };
+
+    let rgba = small.to_rgba8();
     let (w, h) = rgba.dimensions();
     let side = w.min(h);
     let x = (w - side) / 2;
     let y = (h - side) / 2;
     let mut cropped = image::imageops::crop_imm(&rgba, x, y, side, side).to_image();
+
     // GPUI expects BGRA pixel order; the `image` crate produces RGBA.
     for pixel in cropped.as_flat_samples_mut().samples.chunks_exact_mut(4) {
         pixel.swap(0, 2);

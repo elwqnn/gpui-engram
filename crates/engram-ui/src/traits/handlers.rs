@@ -51,6 +51,14 @@ pub type HoverHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 /// [`ClickHandler`] is needed.
 pub type MouseDownHandler = Rc<dyn Fn(&MouseDownEvent, &mut Window, &mut App) + 'static>;
 
+/// Handler fired with an `f64` payload. Used by [`Stepper`] for value
+/// changes (increment/decrement).
+pub type F64Handler = Rc<dyn Fn(f64, &mut Window, &mut App) + 'static>;
+
+/// Handler fired with an `f32` payload. Used by [`Slider`] for value
+/// changes (drag/click).
+pub type F32Handler = Rc<dyn Fn(f32, &mut Window, &mut App) + 'static>;
+
 /// Builder closure that lazily produces a tooltip view. Used by every
 /// component that exposes a `.tooltip(...)` builder method (today: ListItem
 /// and ButtonLike). The closure is invoked at hover time so the tooltip

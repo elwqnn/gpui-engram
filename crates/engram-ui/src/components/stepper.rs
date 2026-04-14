@@ -16,9 +16,7 @@ use crate::components::icon::{Icon, IconName, IconSize};
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
 use crate::traits::Disableable;
-
-/// Handler invoked when the stepper value changes. Receives the new value.
-pub type StepperHandler = Rc<dyn Fn(f64, &mut Window, &mut App) + 'static>;
+use crate::traits::handlers::F64Handler;
 
 /// A compact numeric control with decrement/increment buttons.
 #[derive(IntoElement)]
@@ -30,7 +28,7 @@ pub struct Stepper {
     step: f64,
     disabled: bool,
     label: Option<SharedString>,
-    on_change: Option<StepperHandler>,
+    on_change: Option<F64Handler>,
 }
 
 impl Stepper {

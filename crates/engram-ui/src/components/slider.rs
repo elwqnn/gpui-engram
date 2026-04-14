@@ -11,16 +11,14 @@ use std::rc::Rc;
 
 use engram_theme::{ActiveTheme, Color, Spacing};
 use gpui::{
-    App, Bounds, ElementId, IntoElement, MouseButton, Pixels, RenderOnce, SharedString, Styled,
-    Window, canvas, div, point, prelude::*, px, relative, size,
+    App, Bounds, ElementId, IntoElement, MouseButton, MouseMoveEvent, Pixels, RenderOnce,
+    SharedString, Styled, Window, canvas, div, point, prelude::*, px, relative, size,
 };
 
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
 use crate::traits::Disableable;
-
-/// Handler invoked when the slider value changes. Receives the new value.
-pub type SliderHandler = Rc<dyn Fn(f32, &mut Window, &mut App) + 'static>;
+use crate::traits::handlers::F32Handler;
 
 /// A horizontal slider for selecting a numeric value within a range.
 #[derive(IntoElement)]
@@ -33,7 +31,7 @@ pub struct Slider {
     disabled: bool,
     label: Option<SharedString>,
     show_value: bool,
-    on_change: Option<SliderHandler>,
+    on_change: Option<F32Handler>,
 }
 
 impl Slider {
@@ -142,11 +140,14 @@ impl RenderOnce for Slider {
 
         let paint_bounds = track_bounds.clone();
 
-        // The track with fill and thumb.
+        // The interaction area is intentionally taller than the visual
+        // track so the user can drag vertically without losing the cursor
+        // — same approach as HTML <input type="range">. The visible 6px
+        // track is centered inside via flex + items_center.
         let track = div()
             .id(self.id.clone())
             .w_full()
-            .h(thumb_size)
+            .h(px(40.0))
             .flex()
             .items_center()
             .child(
@@ -202,9 +203,11 @@ impl RenderOnce for Slider {
                     let min = self.min;
                     let max = self.max;
                     let step = self.step;
-                    let bounds_ref = track_bounds;
+                    let bounds_for_click = track_bounds.clone();
+                    let bounds_for_move = track_bounds;
+                    let move_handler = handler.clone();
                     this.on_mouse_down(MouseButton::Left, move |event, window, cx| {
-                        let b = bounds_ref.get();
+                        let b = bounds_for_click.get();
                         let w = b.size.width.max(px(1.0));
                         let x = event.position.x - b.origin.x;
                         let frac = (x / w).clamp(0.0, 1.0);
@@ -213,6 +216,19 @@ impl RenderOnce for Slider {
                             val = (val / s).round() * s;
                         }
                         handler(val.clamp(min, max), window, cx);
+                    })
+                    .on_mouse_move(move |event: &MouseMoveEvent, window, cx| {
+                        if event.pressed_button == Some(MouseButton::Left) {
+                            let b = bounds_for_move.get();
+                            let w = b.size.width.max(px(1.0));
+                            let x = event.position.x - b.origin.x;
+                            let frac = (x / w).clamp(0.0, 1.0);
+                            let mut val = min + frac * (max - min);
+                            if let Some(s) = step {
+                                val = (val / s).round() * s;
+                            }
+                            move_handler(val.clamp(min, max), window, cx);
+                        }
                     })
                 },
             );

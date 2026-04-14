@@ -7,7 +7,7 @@
 
 use std::time::Duration;
 
-use engram_theme::ActiveTheme;
+use engram_theme::{ActiveTheme, Radius, Spacing};
 use gpui::{
     Animation, AnimationExt, App, IntoElement, Pixels, RenderOnce, Styled, Window, div,
     prelude::*, px,
@@ -80,10 +80,10 @@ impl RenderOnce for Skeleton {
         let base = div()
             .w(self.width)
             .h(self.height)
-            .bg(colors.ghost_element_background);
+            .bg(colors.surface_background);
 
         let shaped = match self.shape {
-            SkeletonShape::Rectangle => base.rounded(px(4.0)),
+            SkeletonShape::Rectangle => base.rounded(Radius::Medium.pixels()),
             SkeletonShape::Circle => base.rounded_full(),
         };
 
@@ -104,7 +104,7 @@ impl RenderOnce for Skeleton {
 /// Convenience: a common "text block" skeleton — several lines stacked.
 pub fn skeleton_text(lines: usize, line_width: Pixels) -> impl IntoElement {
     v_flex()
-        .gap(px(8.0))
+        .gap(Spacing::Medium.pixels())
         .children((0..lines).map(move |i| {
             // Last line is shorter for visual interest.
             let w = if i == lines - 1 {
