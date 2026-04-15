@@ -16,9 +16,7 @@ use crate::components::icon::{Icon, IconName, IconSize};
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
 use crate::traits::Disableable;
-
-/// Handler invoked when a page is clicked. Receives the 1-based page number.
-type PageClickHandler = Rc<dyn Fn(usize, &mut Window, &mut App) + 'static>;
+use crate::traits::handlers::UsizeHandler;
 
 /// Internal representation of a slot in the page row.
 #[derive(Debug, Clone)]
@@ -37,7 +35,7 @@ pub struct Pagination {
     total_pages: usize,
     visible_pages: usize,
     disabled: bool,
-    on_click: Option<PageClickHandler>,
+    on_click: Option<UsizeHandler>,
 }
 
 impl Pagination {
@@ -148,7 +146,7 @@ impl RenderOnce for Pagination {
                           icon: IconName,
                           target_page: usize,
                           enabled: bool,
-                          handler: &Option<PageClickHandler>| {
+                          handler: &Option<UsizeHandler>| {
             let btn = div()
                 .id(SharedString::from(format!("{}-{}", self.id, id_suffix)))
                 .size(btn_size)
@@ -223,7 +221,7 @@ impl RenderOnce for Pagination {
                                 .child(
                                     Label::new(format!("{page}"))
                                         .size(LabelSize::Small)
-                                        .color(Color::Default),
+                                        .color(Color::Custom(colors.background)),
                                 )
                         } else {
                             let btn = btn

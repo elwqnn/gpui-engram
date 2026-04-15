@@ -483,10 +483,15 @@ impl ButtonCommon for ButtonLike {
 
 impl RenderOnce for ButtonLike {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let style = self
-            .selected_style
-            .filter(|_| self.selected)
-            .unwrap_or(self.style);
+        // When `selected` is true but no explicit `selected_style` was set,
+        // fall back to a tinted-accent palette so selection is visible even
+        // on low-contrast base styles (Subtle, Transparent).
+        let style = if self.selected {
+            self.selected_style
+                .unwrap_or(ButtonStyle::Tinted(TintColor::Accent))
+        } else {
+            self.style
+        };
 
         let enabled = style.enabled(self.layer, cx);
         let hovered = style.hovered(self.layer, cx);

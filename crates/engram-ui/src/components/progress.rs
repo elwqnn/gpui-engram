@@ -63,7 +63,7 @@ impl ProgressBar {
 impl RenderOnce for ProgressBar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors();
-        let bg = self.bg_color.unwrap_or(colors.background);
+        let bg = self.bg_color.unwrap_or(colors.element_background);
         let fg = self.fg_color.unwrap_or(colors.status.info);
         let over = self.over_color.unwrap_or(colors.status.error);
         let fill_width = (self.value / self.max_value).clamp(0.02, 1.0);

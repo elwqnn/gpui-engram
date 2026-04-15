@@ -102,7 +102,7 @@ impl RenderOnce for DescriptionList {
                                     .color(Color::Muted),
                             ),
                     )
-                    .child(div().flex_1().child(entry.value));
+                    .child(h_flex().flex_1().items_center().child(entry.value));
 
                 if self.bordered && i < entry_count - 1 {
                     row.border_b_1().border_color(border_color)

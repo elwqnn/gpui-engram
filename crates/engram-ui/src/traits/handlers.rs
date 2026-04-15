@@ -59,6 +59,10 @@ pub type F64Handler = Rc<dyn Fn(f64, &mut Window, &mut App) + 'static>;
 /// changes (drag/click).
 pub type F32Handler = Rc<dyn Fn(f32, &mut Window, &mut App) + 'static>;
 
+/// Handler fired with a `usize` payload. Used by [`Pagination`] (page
+/// index) and anywhere an index/position callback is needed.
+pub type UsizeHandler = Rc<dyn Fn(usize, &mut Window, &mut App) + 'static>;
+
 /// Builder closure that lazily produces a tooltip view. Used by every
 /// component that exposes a `.tooltip(...)` builder method (today: ListItem
 /// and ButtonLike). The closure is invoked at hover time so the tooltip

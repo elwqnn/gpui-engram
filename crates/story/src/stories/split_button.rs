@@ -13,8 +13,7 @@ impl Render for SplitButtonStory {
                         "Filled (default)",
                         SplitButton::new(
                             IconButton::new("sb-left-1", IconName::Play),
-                            IconButton::new("sb-right-1", IconName::ChevronDown)
-                                .into_any_element(),
+                            IconButton::new("sb-right-1", IconName::ChevronDown),
                         )
                         .into_any_element(),
                     ),
@@ -22,8 +21,7 @@ impl Render for SplitButtonStory {
                         "Outlined",
                         SplitButton::new(
                             IconButton::new("sb-left-2", IconName::Save),
-                            IconButton::new("sb-right-2", IconName::ChevronDown)
-                                .into_any_element(),
+                            IconButton::new("sb-right-2", IconName::ChevronDown),
                         )
                         .style(SplitButtonStyle::Outlined)
                         .into_any_element(),
@@ -32,8 +30,7 @@ impl Render for SplitButtonStory {
                         "Transparent",
                         SplitButton::new(
                             IconButton::new("sb-left-3", IconName::Settings),
-                            IconButton::new("sb-right-3", IconName::ChevronDown)
-                                .into_any_element(),
+                            IconButton::new("sb-right-3", IconName::ChevronDown),
                         )
                         .style(SplitButtonStyle::Transparent)
                         .into_any_element(),

@@ -230,10 +230,15 @@ impl<T: ButtonBuilder, const N: usize> ToggleButtonGroup<T, N> {
 
 impl<T: ButtonBuilder, const N: usize> RenderOnce for ToggleButtonGroup<T, N> {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let border_color = cx.theme().colors().border.opacity(0.6);
-        let is_bordered = self.style == ToggleButtonGroupStyle::Outlined
-            || self.style == ToggleButtonGroupStyle::Filled;
+        let colors = cx.theme().colors();
+        let border_color = colors.border.opacity(0.6);
+        let is_outlined = self.style == ToggleButtonGroupStyle::Outlined;
+        let is_filled = self.style == ToggleButtonGroupStyle::Filled;
         let is_transparent = self.style == ToggleButtonGroupStyle::Transparent;
+        // Inner buttons are transparent in every group style — the group's
+        // container paints the chrome (background, border). Selection is
+        // always an accent tint so it reads against any group backdrop.
+        let inner_style = ButtonStyle::Transparent;
 
         let entries: Vec<AnyElement> = self
             .buttons
@@ -256,12 +261,10 @@ impl<T: ButtonBuilder, const N: usize> RenderOnce for ToggleButtonGroup<T, N> {
                         leftmost: i == 0,
                         rightmost: i == N - 1,
                     }.to_rounding()))
+                    .style(inner_style)
                     .when(is_selected, |this| {
                         this.toggle_state(true)
                             .selected_style(ButtonStyle::Tinted(TintColor::Accent))
-                    })
-                    .when(self.style == ToggleButtonGroupStyle::Filled, |this| {
-                        this.style(ButtonStyle::Filled)
                     })
                     .size(self.size)
                     .child(
@@ -293,11 +296,11 @@ impl<T: ButtonBuilder, const N: usize> RenderOnce for ToggleButtonGroup<T, N> {
                     })
                     .on_click(on_click);
 
-                // Wrap in a cell div that draws inter-button borders for
-                // bordered styles.
+                // Outlined shows a thin divider between cells. Filled keeps
+                // cells flush so the group reads as a single surface.
                 let last_item = i == N - 1;
                 div()
-                    .when(is_bordered && !last_item, |this| {
+                    .when(is_outlined && !last_item, |this| {
                         this.border_r_1().border_color(border_color)
                     })
                     .when(!self.auto_width, |this| {
@@ -321,16 +324,13 @@ impl<T: ButtonBuilder, const N: usize> RenderOnce for ToggleButtonGroup<T, N> {
             })
             .rounded_md()
             .overflow_hidden()
-            .map(|this| {
-                if is_transparent {
-                    this.gap_px()
-                } else {
-                    this.border_1().border_color(border_color)
-                }
+            .when(is_filled, |this| this.bg(colors.element_background))
+            .when(is_outlined, |this| {
+                this.border_1().border_color(border_color)
             })
             .child(
                 h_flex()
-                    .when(!is_bordered, |this| this.gap_px())
+                    .when(is_transparent || is_filled, |this| this.gap_px())
                     .children(entries),
             )
     }

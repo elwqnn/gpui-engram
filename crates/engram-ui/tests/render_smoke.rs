@@ -859,12 +859,12 @@ fn split_button_renders(cx: &mut TestAppContext) {
             .gap(Spacing::Small.pixels())
             .child(SplitButton::new(
                 IconButton::new("sb-left", IconName::Play),
-                IconButton::new("sb-menu", IconName::ChevronDown).into_any_element(),
+                IconButton::new("sb-menu", IconName::ChevronDown),
             ))
             .child(
                 SplitButton::new(
                     IconButton::new("sb-left2", IconName::Save),
-                    IconButton::new("sb-menu2", IconName::ChevronDown).into_any_element(),
+                    IconButton::new("sb-menu2", IconName::ChevronDown),
                 )
                 .style(SplitButtonStyle::Outlined),
             )

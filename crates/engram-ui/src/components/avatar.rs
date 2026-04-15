@@ -291,11 +291,13 @@ impl RenderOnce for Chip {
         };
 
         let (label_size, px_x, px_y) = match self.size {
-            ChipSize::Small => (LabelSize::XSmall, Spacing::XSmall, Spacing::XXSmall),
-            ChipSize::Medium => (LabelSize::Small, Spacing::Small, Spacing::XXSmall),
+            ChipSize::Small => (LabelSize::XSmall, Spacing::Small, Spacing::None),
+            ChipSize::Medium => (LabelSize::Small, Spacing::Medium, Spacing::None),
         };
 
         div()
+            .flex_none()
+            .self_start()
             .px(px_x.pixels())
             .py(px_y.pixels())
             .rounded(Radius::Full.pixels())

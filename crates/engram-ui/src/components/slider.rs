@@ -11,8 +11,8 @@ use std::rc::Rc;
 
 use engram_theme::{ActiveTheme, Color, Spacing};
 use gpui::{
-    App, Bounds, ElementId, IntoElement, MouseButton, MouseMoveEvent, Pixels, RenderOnce,
-    SharedString, Styled, Window, canvas, div, point, prelude::*, px, relative, size,
+    App, Bounds, BoxShadow, ElementId, IntoElement, MouseButton, MouseMoveEvent, Pixels,
+    RenderOnce, SharedString, Styled, Window, canvas, div, point, prelude::*, px, relative, size,
 };
 
 use crate::components::label::{Label, LabelCommon, LabelSize};
@@ -105,7 +105,7 @@ impl RenderOnce for Slider {
         let track_bg = if self.disabled {
             colors.element_disabled
         } else {
-            colors.ghost_element_background
+            colors.element_background
         };
         let fill_bg = if self.disabled {
             colors.text_disabled
@@ -120,7 +120,7 @@ impl RenderOnce for Slider {
         let thumb_border = if self.disabled {
             colors.border_variant
         } else {
-            colors.accent
+            colors.border_focused
         };
         let label_color = if self.disabled {
             Color::Disabled
@@ -128,8 +128,9 @@ impl RenderOnce for Slider {
             Color::Default
         };
 
-        let track_height = px(6.0);
-        let thumb_size = px(16.0);
+        let track_height = px(4.0);
+        let thumb_size = px(12.0);
+        let ring_color = colors.border_focused.opacity(0.25);
 
         // Capture the track bounds during paint so the click handler can
         // compute a value from the pointer's X position.
@@ -179,7 +180,8 @@ impl RenderOnce for Slider {
                             .rounded_full()
                             .bg(fill_bg),
                     )
-                    // Thumb
+                    // Thumb — shadcn-style: small white circle with a ring
+                    // halo on hover/active for affordance.
                     .child(
                         div()
                             .absolute()
@@ -189,11 +191,18 @@ impl RenderOnce for Slider {
                             .size(thumb_size)
                             .rounded_full()
                             .bg(thumb_bg)
-                            .border_2()
+                            .border_1()
                             .border_color(thumb_border)
                             .when(!self.disabled, |this| {
                                 this.cursor_pointer()
-                                    .hover(|s| s.border_color(colors.border_focused))
+                                    .hover(|s| {
+                                        s.border_color(colors.accent).shadow(vec![BoxShadow {
+                                            color: ring_color,
+                                            offset: point(px(0.), px(0.)),
+                                            blur_radius: px(0.),
+                                            spread_radius: px(3.),
+                                        }])
+                                    })
                             }),
                     ),
             )

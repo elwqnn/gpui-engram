@@ -4,6 +4,7 @@ use crate::layout::{example, example_group};
 pub struct SliderStory {
     basic: f32,
     stepped: f32,
+    small: f32,
 }
 
 impl SliderStory {
@@ -11,6 +12,7 @@ impl SliderStory {
         Self {
             basic: 50.0,
             stepped: 30.0,
+            small: 0.5,
         }
     }
 }
@@ -68,14 +70,21 @@ impl Render for SliderStory {
                             .disabled(true)
                             .into_any_element(),
                     ),
-                    example(
-                        "Custom range (0–1)",
-                        Slider::new("sl-small", 0.5)
+                    example("Custom range (0–1)", {
+                        let w = weak.clone();
+                        Slider::new("sl-small", self.small)
                             .min(0.0)
                             .max(1.0)
                             .show_value(true)
-                            .into_any_element(),
-                    ),
+                            .on_change(move |val, _, cx| {
+                                w.update(cx, |this, cx| {
+                                    this.small = val;
+                                    cx.notify();
+                                })
+                                .ok();
+                            })
+                            .into_any_element()
+                    }),
                 ],
             ))
     }

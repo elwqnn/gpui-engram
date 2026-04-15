@@ -1,17 +1,24 @@
 //! [`SplitButton`] — a two-part button with a primary action on the left
 //! and a secondary action (e.g. dropdown trigger) on the right, visually
 //! separated by a divider.
+//!
+//! The outer `SplitButtonStyle` drives the chrome: `Filled` paints a shared
+//! element background, `Outlined` paints a shared border, `Transparent`
+//! strips both. Either side is forced to [`ButtonStyle::Transparent`] at
+//! render time so the inner buttons never double-paint the chrome.
 
 use engram_theme::ActiveTheme;
 use gpui::{
-    AnyElement, App, BoxShadow, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    hsla, point, prelude::*, px, relative,
+    App, BoxShadow, IntoElement, ParentElement, RenderOnce, Styled, Window, div, hsla, point,
+    prelude::*, px, relative,
 };
 
-use crate::components::button::button_like::ButtonLike;
+use crate::components::button::button_like::{ButtonCommon, ButtonLike, ButtonStyle};
 use crate::components::button::icon_button::IconButton;
 use crate::components::stack::h_flex;
-/// What kind of element the left side of the split button contains.
+use crate::styles::ElevationIndex;
+
+/// What kind of element either side of the split button contains.
 pub enum SplitButtonKind {
     ButtonLike(ButtonLike),
     IconButton(IconButton),
@@ -29,6 +36,15 @@ impl From<IconButton> for SplitButtonKind {
     }
 }
 
+impl SplitButtonKind {
+    fn with_style(self, style: ButtonStyle) -> Self {
+        match self {
+            Self::ButtonLike(b) => Self::ButtonLike(b.style(style)),
+            Self::IconButton(b) => Self::IconButton(b.style(style)),
+        }
+    }
+}
+
 /// Visual style of the split button container.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SplitButtonStyle {
@@ -41,15 +57,18 @@ pub enum SplitButtonStyle {
 #[derive(IntoElement)]
 pub struct SplitButton {
     left: SplitButtonKind,
-    right: AnyElement,
+    right: SplitButtonKind,
     style: SplitButtonStyle,
 }
 
 impl SplitButton {
-    pub fn new(left: impl Into<SplitButtonKind>, right: AnyElement) -> Self {
+    pub fn new(
+        left: impl Into<SplitButtonKind>,
+        right: impl Into<SplitButtonKind>,
+    ) -> Self {
         Self {
             left: left.into(),
-            right,
+            right: right.into(),
             style: SplitButtonStyle::Filled,
         }
     }
@@ -62,39 +81,46 @@ impl SplitButton {
 
 impl RenderOnce for SplitButton {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let is_filled_or_outlined = matches!(
-            self.style,
-            SplitButtonStyle::Filled | SplitButtonStyle::Outlined
-        );
+        let colors = cx.theme().colors();
+        let is_filled = self.style == SplitButtonStyle::Filled;
+        let is_outlined = self.style == SplitButtonStyle::Outlined;
+        let divider_color = match self.style {
+            SplitButtonStyle::Filled => colors.border.opacity(0.5),
+            SplitButtonStyle::Outlined => colors.border.opacity(0.6),
+            SplitButtonStyle::Transparent => colors.border.opacity(0.3),
+        };
+
+        // Both sides render with transparent chrome — the outer container
+        // is responsible for background + border so the two sides read as
+        // a single surface.
+        let left = self.left.with_style(ButtonStyle::Transparent);
+        let right = self.right.with_style(ButtonStyle::Transparent);
+
+        let render_kind = |k: SplitButtonKind| match k {
+            SplitButtonKind::ButtonLike(b) => {
+                b.layer(ElevationIndex::Surface).into_any_element()
+            }
+            SplitButtonKind::IconButton(b) => {
+                b.layer(ElevationIndex::Surface).into_any_element()
+            }
+        };
 
         h_flex()
-            .when(is_filled_or_outlined, |this| {
-                this.rounded_sm()
-                    .border_1()
-                    .border_color(cx.theme().colors().border.opacity(0.8))
+            .rounded_sm()
+            .overflow_hidden()
+            .when(is_filled, |this| {
+                this.bg(colors.element_background).shadow(vec![BoxShadow {
+                    color: hsla(0.0, 0.0, 0.0, 0.16),
+                    offset: point(px(0.), px(1.)),
+                    blur_radius: px(0.),
+                    spread_radius: px(0.),
+                }])
             })
-            .when(self.style == SplitButtonStyle::Transparent, |this| {
-                this.gap_px()
+            .when(is_outlined, |this| {
+                this.border_1().border_color(colors.border.opacity(0.8))
             })
-            .child(div().flex_grow().child(match self.left {
-                SplitButtonKind::ButtonLike(b) => b.into_any_element(),
-                SplitButtonKind::IconButton(b) => b.into_any_element(),
-            }))
-            .child(
-                div()
-                    .h(relative(0.8))
-                    .w_px()
-                    .bg(cx.theme().colors().border.opacity(0.5)),
-            )
-            .child(self.right)
-            .when(self.style == SplitButtonStyle::Filled, |this| {
-                this.bg(cx.theme().colors().element_background)
-                    .shadow(vec![BoxShadow {
-                        color: hsla(0.0, 0.0, 0.0, 0.16),
-                        offset: point(px(0.), px(1.)),
-                        blur_radius: px(0.),
-                        spread_radius: px(0.),
-                    }])
-            })
+            .child(div().flex_grow().child(render_kind(left)))
+            .child(div().h(relative(0.8)).w_px().bg(divider_color))
+            .child(render_kind(right))
     }
 }
