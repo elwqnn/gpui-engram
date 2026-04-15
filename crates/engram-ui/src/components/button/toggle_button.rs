@@ -21,7 +21,7 @@ use super::button_like::{
 use crate::components::icon::{Icon, IconName, IconSize};
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::{h_flex, v_flex};
-use crate::traits::handlers::TooltipBuilder;
+use crate::traits::handlers::{ClickHandler, TooltipBuilder};
 use crate::traits::{Clickable, Toggleable};
 
 /// The position of a button within the group, determining which corners
@@ -48,7 +48,7 @@ impl ToggleButtonPosition {
 pub struct ButtonConfiguration {
     label: SharedString,
     icon: Option<IconName>,
-    on_click: Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>,
+    on_click: ClickHandler,
     selected: bool,
     tooltip: Option<TooltipBuilder>,
 }
@@ -68,7 +68,7 @@ mod sealed {
 /// A simple toggle button with just a label.
 pub struct ToggleButtonSimple {
     label: SharedString,
-    on_click: Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>,
+    on_click: ClickHandler,
     selected: bool,
     tooltip: Option<TooltipBuilder>,
 }
@@ -80,7 +80,7 @@ impl ToggleButtonSimple {
     ) -> Self {
         Self {
             label: label.into(),
-            on_click: Box::new(on_click),
+            on_click: Rc::new(on_click),
             selected: false,
             tooltip: None,
         }
@@ -113,7 +113,7 @@ impl ButtonBuilder for ToggleButtonSimple {
 pub struct ToggleButtonWithIcon {
     label: SharedString,
     icon: IconName,
-    on_click: Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>,
+    on_click: ClickHandler,
     selected: bool,
     tooltip: Option<TooltipBuilder>,
 }
@@ -127,7 +127,7 @@ impl ToggleButtonWithIcon {
         Self {
             label: label.into(),
             icon,
-            on_click: Box::new(on_click),
+            on_click: Rc::new(on_click),
             selected: false,
             tooltip: None,
         }
@@ -294,7 +294,7 @@ impl<T: ButtonBuilder, const N: usize> RenderOnce for ToggleButtonGroup<T, N> {
                     .when_some(tooltip, |this: ButtonLike, tt| {
                         this.tooltip(move |window, cx| tt(window, cx))
                     })
-                    .on_click(on_click);
+                    .on_click(move |event, window, cx| on_click(event, window, cx));
 
                 // Outlined shows a thin divider between cells. Filled keeps
                 // cells flush so the group reads as a single surface.

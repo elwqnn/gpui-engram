@@ -279,7 +279,7 @@ impl RenderOnce for Chip {
         // flavors pull bg + border from StatusColors; Default and Accent
         // keep the neutral element background.
         let (bg, border) = if self.outline {
-            (transparent_black(), label_color.hsla(&colors))
+            (transparent_black(), label_color.hsla(colors))
         } else {
             match self.style {
                 ChipStyle::Success => (status.success_background, status.success_border),
