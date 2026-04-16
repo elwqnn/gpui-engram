@@ -25,9 +25,12 @@
 //!
 //! Word-by-word navigation is bound to Ctrl/Alt+Left/Right (and the shift
 //! variants for selection, and the backspace/delete variants for word
-//! deletion). Multi-line input, undo/redo, and word-double-click selection
-//! are still TODO — the current version covers the 95% single-line case
-//! that matters for forms and search boxes.
+//! deletion). Undo/redo is bound to Cmd/Ctrl+Z (undo) and
+//! Cmd/Ctrl+Shift+Z / Ctrl+Y (redo), with consecutive typing and
+//! consecutive deletions grouped into a single undo step. Multi-line
+//! input and word-double-click selection are still TODO — the current
+//! version covers the 95% single-line case that matters for forms and
+//! search boxes.
 //!
 //! ## Usage
 //!
@@ -88,9 +91,30 @@ actions!(
         Copy,
         Cut,
         Paste,
+        Undo,
+        Redo,
         Submit,
     ]
 );
+
+/// Classification used to group consecutive edits into a single undo step.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum EditKind {
+    Insert,
+    DeleteBack,
+    DeleteForward,
+    Paste,
+    Cut,
+}
+
+#[derive(Clone)]
+struct UndoSnapshot {
+    content: SharedString,
+    selected_range: Range<usize>,
+    selection_reversed: bool,
+}
+
+const UNDO_CAP: usize = 256;
 
 /// Emitted when the user presses Enter. The payload is the field value
 /// at the moment of submission.
@@ -120,6 +144,11 @@ pub struct TextField {
     width: Pixels,
     on_change: Option<StringHandler>,
     on_submit: Option<StringHandler>,
+    undo_stack: Vec<UndoSnapshot>,
+    redo_stack: Vec<UndoSnapshot>,
+    /// Kind of the edit currently being grouped. A caret movement, mouse
+    /// click, or undo/redo clears it, starting a fresh group.
+    pending_edit_kind: Option<EditKind>,
 }
 
 impl TextField {
@@ -137,6 +166,9 @@ impl TextField {
             width: px(220.0),
             on_change: None,
             on_submit: None,
+            undo_stack: Vec::new(),
+            redo_stack: Vec::new(),
+            pending_edit_kind: None,
         }
     }
 
@@ -174,7 +206,8 @@ impl TextField {
     }
 
     /// Replace the value programmatically. Selection is clamped to the
-    /// new content length.
+    /// new content length. Undo history is cleared — programmatic sets
+    /// are treated as a fresh document rather than a keystroke.
     pub fn set_value(&mut self, value: impl Into<String>, cx: &mut Context<Self>) {
         let new: SharedString = value.into().into();
         let end = new.len();
@@ -182,7 +215,58 @@ impl TextField {
         self.selected_range = end..end;
         self.selection_reversed = false;
         self.marked_range = None;
+        self.undo_stack.clear();
+        self.redo_stack.clear();
+        self.pending_edit_kind = None;
         cx.notify();
+    }
+
+    // ---------- undo / redo ----------
+
+    fn snapshot(&self) -> UndoSnapshot {
+        UndoSnapshot {
+            content: self.content.clone(),
+            selected_range: self.selected_range.clone(),
+            selection_reversed: self.selection_reversed,
+        }
+    }
+
+    fn restore(&mut self, snap: UndoSnapshot) {
+        self.content = snap.content;
+        self.selected_range = snap.selected_range;
+        self.selection_reversed = snap.selection_reversed;
+        self.marked_range = None;
+        self.pending_edit_kind = None;
+    }
+
+    /// Called before a mutation. Pushes a snapshot of the *pre-edit*
+    /// state onto the undo stack, unless the previous edit matches the
+    /// same grouping kind — in which case consecutive typing or deletion
+    /// collapses into a single undo step.
+    fn push_undo(&mut self, kind: EditKind) {
+        let groupable = matches!(
+            kind,
+            EditKind::Insert | EditKind::DeleteBack | EditKind::DeleteForward
+        );
+        if groupable
+            && self.pending_edit_kind == Some(kind)
+            && !self.undo_stack.is_empty()
+        {
+            self.pending_edit_kind = Some(kind);
+            return;
+        }
+        if self.undo_stack.len() >= UNDO_CAP {
+            self.undo_stack.remove(0);
+        }
+        self.undo_stack.push(self.snapshot());
+        self.redo_stack.clear();
+        self.pending_edit_kind = Some(kind);
+    }
+
+    /// Call when the user performs a non-editing action (caret movement,
+    /// selection change, click). The next edit starts a new undo group.
+    fn undo_boundary(&mut self) {
+        self.pending_edit_kind = None;
     }
 
     // ---------- internal helpers ----------
@@ -300,6 +384,7 @@ impl TextField {
     // ---------- action handlers ----------
 
     fn on_left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
         } else {
@@ -308,6 +393,7 @@ impl TextField {
     }
 
     fn on_right(&mut self, _: &Right, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         if self.selected_range.is_empty() {
             self.move_to(self.next_boundary(self.selected_range.end), cx);
         } else {
@@ -316,14 +402,17 @@ impl TextField {
     }
 
     fn on_select_left(&mut self, _: &SelectLeft, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.select_to(self.previous_boundary(self.cursor_offset()), cx);
     }
 
     fn on_select_right(&mut self, _: &SelectRight, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.select_to(self.next_boundary(self.cursor_offset()), cx);
     }
 
     fn on_word_left(&mut self, _: &WordLeft, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         let offset = if self.selected_range.is_empty() {
             self.previous_word_boundary(self.cursor_offset())
         } else {
@@ -333,6 +422,7 @@ impl TextField {
     }
 
     fn on_word_right(&mut self, _: &WordRight, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         let offset = if self.selected_range.is_empty() {
             self.next_word_boundary(self.cursor_offset())
         } else {
@@ -342,6 +432,7 @@ impl TextField {
     }
 
     fn on_select_word_left(&mut self, _: &SelectWordLeft, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.select_to(self.previous_word_boundary(self.cursor_offset()), cx);
     }
 
@@ -351,6 +442,7 @@ impl TextField {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        self.undo_boundary();
         self.select_to(self.next_word_boundary(self.cursor_offset()), cx);
     }
 
@@ -367,7 +459,9 @@ impl TextField {
             }
             self.select_to(prev, cx);
         }
-        self.replace_text_in_range(None, "", window, cx);
+        self.push_undo(EditKind::DeleteBack);
+        let range = self.selected_range.clone();
+        self.perform_edit(range, "", window, cx);
     }
 
     fn on_delete_word_right(
@@ -383,19 +477,24 @@ impl TextField {
             }
             self.select_to(next, cx);
         }
-        self.replace_text_in_range(None, "", window, cx);
+        self.push_undo(EditKind::DeleteForward);
+        let range = self.selected_range.clone();
+        self.perform_edit(range, "", window, cx);
     }
 
     fn on_select_all(&mut self, _: &SelectAll, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.move_to(0, cx);
         self.select_to(self.content.len(), cx);
     }
 
     fn on_home(&mut self, _: &Home, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.move_to(0, cx);
     }
 
     fn on_end(&mut self, _: &End, _: &mut Window, cx: &mut Context<Self>) {
+        self.undo_boundary();
         self.move_to(self.content.len(), cx);
     }
 
@@ -407,7 +506,9 @@ impl TextField {
             }
             self.select_to(prev, cx);
         }
-        self.replace_text_in_range(None, "", window, cx);
+        self.push_undo(EditKind::DeleteBack);
+        let range = self.selected_range.clone();
+        self.perform_edit(range, "", window, cx);
     }
 
     fn on_delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
@@ -418,7 +519,9 @@ impl TextField {
             }
             self.select_to(next, cx);
         }
-        self.replace_text_in_range(None, "", window, cx);
+        self.push_undo(EditKind::DeleteForward);
+        let range = self.selected_range.clone();
+        self.perform_edit(range, "", window, cx);
     }
 
     fn on_copy(&mut self, _: &Copy, _: &mut Window, cx: &mut Context<Self>) {
@@ -434,7 +537,9 @@ impl TextField {
             cx.write_to_clipboard(ClipboardItem::new_string(
                 self.content[self.selected_range.clone()].to_string(),
             ));
-            self.replace_text_in_range(None, "", window, cx);
+            self.push_undo(EditKind::Cut);
+            let range = self.selected_range.clone();
+            self.perform_edit(range, "", window, cx);
         }
     }
 
@@ -442,7 +547,9 @@ impl TextField {
         if let Some(text) = cx.read_from_clipboard().and_then(|item| item.text()) {
             // Single-line field: flatten newlines to spaces.
             let sanitized = text.replace('\n', " ");
-            self.replace_text_in_range(None, &sanitized, window, cx);
+            self.push_undo(EditKind::Paste);
+            let range = self.selected_range.clone();
+            self.perform_edit(range, &sanitized, window, cx);
         }
     }
 
@@ -462,6 +569,7 @@ impl TextField {
         _window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        self.undo_boundary();
         self.is_selecting = true;
         let idx = self.index_for_mouse_position(event.position);
         if event.modifiers.shift {
@@ -480,6 +588,47 @@ impl TextField {
 
     fn on_mouse_up(&mut self, _: &MouseUpEvent, _: &mut Window, _: &mut Context<Self>) {
         self.is_selecting = false;
+    }
+
+    /// Core mutation: replace `range` with `new_text`, collapse selection
+    /// to the end of the inserted text, notify listeners. Does not push
+    /// undo — callers are responsible for calling [`push_undo`] first.
+    fn perform_edit(
+        &mut self,
+        range: Range<usize>,
+        new_text: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let mut out = String::with_capacity(self.content.len() + new_text.len());
+        out.push_str(&self.content[..range.start]);
+        out.push_str(new_text);
+        out.push_str(&self.content[range.end..]);
+        self.content = out.into();
+        let cursor = range.start + new_text.len();
+        self.selected_range = cursor..cursor;
+        self.marked_range.take();
+        self.notify_change(window, cx);
+    }
+
+    fn on_undo(&mut self, _: &Undo, _: &mut Window, cx: &mut Context<Self>) {
+        let Some(prev) = self.undo_stack.pop() else {
+            return;
+        };
+        let current = self.snapshot();
+        self.restore(prev);
+        self.redo_stack.push(current);
+        cx.notify();
+    }
+
+    fn on_redo(&mut self, _: &Redo, _: &mut Window, cx: &mut Context<Self>) {
+        let Some(next) = self.redo_stack.pop() else {
+            return;
+        };
+        let current = self.snapshot();
+        self.restore(next);
+        self.undo_stack.push(current);
+        cx.notify();
     }
 }
 
@@ -532,6 +681,7 @@ impl EntityInputHandler for TextField {
 
     fn unmark_text(&mut self, _window: &mut Window, _cx: &mut Context<Self>) {
         self.marked_range = None;
+        self.undo_boundary();
     }
 
     fn replace_text_in_range(
@@ -546,16 +696,13 @@ impl EntityInputHandler for TextField {
             .map(|r| self.range_from_utf16(r))
             .or(self.marked_range.clone())
             .unwrap_or(self.selected_range.clone());
-
-        let mut out = String::with_capacity(self.content.len() + new_text.len());
-        out.push_str(&self.content[..range.start]);
-        out.push_str(new_text);
-        out.push_str(&self.content[range.end..]);
-        self.content = out.into();
-        let cursor = range.start + new_text.len();
-        self.selected_range = cursor..cursor;
-        self.marked_range.take();
-        self.notify_change(window, cx);
+        let kind = if new_text.is_empty() {
+            EditKind::DeleteBack
+        } else {
+            EditKind::Insert
+        };
+        self.push_undo(kind);
+        self.perform_edit(range, new_text, window, cx);
     }
 
     fn replace_and_mark_text_in_range(
@@ -571,6 +718,9 @@ impl EntityInputHandler for TextField {
             .map(|r| self.range_from_utf16(r))
             .or(self.marked_range.clone())
             .unwrap_or(self.selected_range.clone());
+        // IME composition groups with typing; an unmark (see `unmark_text`)
+        // ends the group so the next real edit pushes a fresh snapshot.
+        self.push_undo(EditKind::Insert);
 
         let mut out = String::with_capacity(self.content.len() + new_text.len());
         out.push_str(&self.content[..range.start]);
@@ -860,6 +1010,8 @@ impl Render for TextField {
             .on_action(cx.listener(Self::on_copy))
             .on_action(cx.listener(Self::on_cut))
             .on_action(cx.listener(Self::on_paste))
+            .on_action(cx.listener(Self::on_undo))
+            .on_action(cx.listener(Self::on_redo))
             .on_action(cx.listener(Self::handle_submit))
             // The mouse-down handler both grabs focus (so subsequent
             // key events route here) and positions the caret. Splitting
@@ -969,6 +1121,11 @@ pub fn bind_text_field_keys(cx: &mut App) {
         KeyBinding::new("ctrl-x", Cut, Some("TextField")),
         KeyBinding::new("cmd-v", Paste, Some("TextField")),
         KeyBinding::new("ctrl-v", Paste, Some("TextField")),
+        KeyBinding::new("cmd-z", Undo, Some("TextField")),
+        KeyBinding::new("ctrl-z", Undo, Some("TextField")),
+        KeyBinding::new("cmd-shift-z", Redo, Some("TextField")),
+        KeyBinding::new("ctrl-shift-z", Redo, Some("TextField")),
+        KeyBinding::new("ctrl-y", Redo, Some("TextField")),
     ]);
 }
 
