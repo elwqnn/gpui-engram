@@ -23,9 +23,11 @@
 //!   left/right/home/end navigation, select variants, backspace/delete,
 //!   select-all, copy/cut/paste, and submit (Enter).
 //!
-//! Word-by-word navigation (Ctrl/Alt+arrow), multi-line input, undo/redo,
-//! and word-double-click selection are still TODO — the current version
-//! covers the 95% single-line case that matters for forms and search boxes.
+//! Word-by-word navigation is bound to Ctrl/Alt+Left/Right (and the shift
+//! variants for selection, and the backspace/delete variants for word
+//! deletion). Multi-line input, undo/redo, and word-double-click selection
+//! are still TODO — the current version covers the 95% single-line case
+//! that matters for forms and search boxes.
 //!
 //! ## Usage
 //!
@@ -70,10 +72,16 @@ actions!(
     [
         Backspace,
         Delete,
+        DeleteWordLeft,
+        DeleteWordRight,
         Left,
         Right,
+        WordLeft,
+        WordRight,
         SelectLeft,
         SelectRight,
+        SelectWordLeft,
+        SelectWordRight,
         SelectAll,
         Home,
         End,
@@ -220,6 +228,14 @@ impl TextField {
             .unwrap_or(self.content.len())
     }
 
+    fn previous_word_boundary(&self, offset: usize) -> usize {
+        previous_word_boundary(&self.content, offset)
+    }
+
+    fn next_word_boundary(&self, offset: usize) -> usize {
+        next_word_boundary(&self.content, offset)
+    }
+
     fn index_for_mouse_position(&self, position: Point<Pixels>) -> usize {
         if self.content.is_empty() {
             return 0;
@@ -305,6 +321,69 @@ impl TextField {
 
     fn on_select_right(&mut self, _: &SelectRight, _: &mut Window, cx: &mut Context<Self>) {
         self.select_to(self.next_boundary(self.cursor_offset()), cx);
+    }
+
+    fn on_word_left(&mut self, _: &WordLeft, _: &mut Window, cx: &mut Context<Self>) {
+        let offset = if self.selected_range.is_empty() {
+            self.previous_word_boundary(self.cursor_offset())
+        } else {
+            self.selected_range.start
+        };
+        self.move_to(offset, cx);
+    }
+
+    fn on_word_right(&mut self, _: &WordRight, _: &mut Window, cx: &mut Context<Self>) {
+        let offset = if self.selected_range.is_empty() {
+            self.next_word_boundary(self.cursor_offset())
+        } else {
+            self.selected_range.end
+        };
+        self.move_to(offset, cx);
+    }
+
+    fn on_select_word_left(&mut self, _: &SelectWordLeft, _: &mut Window, cx: &mut Context<Self>) {
+        self.select_to(self.previous_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn on_select_word_right(
+        &mut self,
+        _: &SelectWordRight,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.select_to(self.next_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn on_delete_word_left(
+        &mut self,
+        _: &DeleteWordLeft,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.selected_range.is_empty() {
+            let prev = self.previous_word_boundary(self.cursor_offset());
+            if self.cursor_offset() == prev {
+                return;
+            }
+            self.select_to(prev, cx);
+        }
+        self.replace_text_in_range(None, "", window, cx);
+    }
+
+    fn on_delete_word_right(
+        &mut self,
+        _: &DeleteWordRight,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.selected_range.is_empty() {
+            let next = self.next_word_boundary(self.cursor_offset());
+            if self.cursor_offset() == next {
+                return;
+            }
+            self.select_to(next, cx);
+        }
+        self.replace_text_in_range(None, "", window, cx);
     }
 
     fn on_select_all(&mut self, _: &SelectAll, _: &mut Window, cx: &mut Context<Self>) {
@@ -767,6 +846,12 @@ impl Render for TextField {
             .on_action(cx.listener(Self::on_right))
             .on_action(cx.listener(Self::on_select_left))
             .on_action(cx.listener(Self::on_select_right))
+            .on_action(cx.listener(Self::on_word_left))
+            .on_action(cx.listener(Self::on_word_right))
+            .on_action(cx.listener(Self::on_select_word_left))
+            .on_action(cx.listener(Self::on_select_word_right))
+            .on_action(cx.listener(Self::on_delete_word_left))
+            .on_action(cx.listener(Self::on_delete_word_right))
             .on_action(cx.listener(Self::on_select_all))
             .on_action(cx.listener(Self::on_home))
             .on_action(cx.listener(Self::on_end))
@@ -812,6 +897,29 @@ impl Render for TextField {
     }
 }
 
+fn is_word(s: &str) -> bool {
+    s.chars().any(|c| c.is_alphanumeric() || c == '_')
+}
+
+fn previous_word_boundary(content: &str, offset: usize) -> usize {
+    content
+        .split_word_bound_indices()
+        .rev()
+        .find_map(|(idx, word)| (is_word(word) && idx < offset).then_some(idx))
+        .unwrap_or(0)
+}
+
+fn next_word_boundary(content: &str, offset: usize) -> usize {
+    content
+        .split_word_bound_indices()
+        .find_map(|(idx, word)| {
+            let end = idx + word.len();
+            (is_word(word) && end > offset).then_some(end)
+        })
+        .unwrap_or(content.len())
+}
+
+
 /// Helper for callers that just want a focused field with an initial value.
 pub fn text_field(cx: &mut App, initial: impl Into<String>) -> Entity<TextField> {
     let initial = initial.into();
@@ -832,6 +940,19 @@ pub fn bind_text_field_keys(cx: &mut App) {
         KeyBinding::new("right", Right, Some("TextField")),
         KeyBinding::new("shift-left", SelectLeft, Some("TextField")),
         KeyBinding::new("shift-right", SelectRight, Some("TextField")),
+        // Word-by-word navigation: alt on macOS, ctrl on Linux/Windows.
+        KeyBinding::new("alt-left", WordLeft, Some("TextField")),
+        KeyBinding::new("alt-right", WordRight, Some("TextField")),
+        KeyBinding::new("ctrl-left", WordLeft, Some("TextField")),
+        KeyBinding::new("ctrl-right", WordRight, Some("TextField")),
+        KeyBinding::new("alt-shift-left", SelectWordLeft, Some("TextField")),
+        KeyBinding::new("alt-shift-right", SelectWordRight, Some("TextField")),
+        KeyBinding::new("ctrl-shift-left", SelectWordLeft, Some("TextField")),
+        KeyBinding::new("ctrl-shift-right", SelectWordRight, Some("TextField")),
+        KeyBinding::new("alt-backspace", DeleteWordLeft, Some("TextField")),
+        KeyBinding::new("alt-delete", DeleteWordRight, Some("TextField")),
+        KeyBinding::new("ctrl-backspace", DeleteWordLeft, Some("TextField")),
+        KeyBinding::new("ctrl-delete", DeleteWordRight, Some("TextField")),
         KeyBinding::new("home", Home, Some("TextField")),
         KeyBinding::new("end", End, Some("TextField")),
         KeyBinding::new("backspace", Backspace, Some("TextField")),
@@ -849,4 +970,37 @@ pub fn bind_text_field_keys(cx: &mut App) {
         KeyBinding::new("cmd-v", Paste, Some("TextField")),
         KeyBinding::new("ctrl-v", Paste, Some("TextField")),
     ]);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{next_word_boundary, previous_word_boundary};
+
+    #[test]
+    fn next_word_boundary_jumps_to_word_end() {
+        assert_eq!(next_word_boundary("hello world", 0), 5);
+        assert_eq!(next_word_boundary("hello world", 2), 5);
+        assert_eq!(next_word_boundary("hello world", 5), 11);
+        assert_eq!(next_word_boundary("hello world", 11), 11);
+    }
+
+    #[test]
+    fn previous_word_boundary_jumps_to_word_start() {
+        assert_eq!(previous_word_boundary("hello world", 11), 6);
+        assert_eq!(previous_word_boundary("hello world", 7), 6);
+        assert_eq!(previous_word_boundary("hello world", 6), 0);
+        assert_eq!(previous_word_boundary("hello world", 0), 0);
+    }
+
+    #[test]
+    fn word_boundary_skips_punctuation() {
+        assert_eq!(next_word_boundary("foo, bar; baz", 3), 8);
+        assert_eq!(previous_word_boundary("foo, bar; baz", 8), 5);
+    }
+
+    #[test]
+    fn word_boundary_handles_underscore_as_word() {
+        assert_eq!(next_word_boundary("foo_bar baz", 0), 7);
+        assert_eq!(previous_word_boundary("foo_bar baz", 7), 0);
+    }
 }
