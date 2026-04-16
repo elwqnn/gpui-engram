@@ -44,7 +44,6 @@ cargo run -p story                          # sidebar gallery with per-component
 `engram` is pre-1.0. The surface is expected to be stable enough to build against, but:
 
 - **`gpui` dependency is git-pinned.** `gpui` and `gpui_platform` come from `zed-industries/zed` at a specific revision (see `Cargo.toml`). Engram cannot be published to crates.io until `gpui` itself is on crates.io; meanwhile consumers depend on engram as a git dep too. Bumping the pin is an intentional per-release action.
-- **`TextField` is single-line only.** Word-by-word navigation, multi-line editing, and undo / redo are out of scope for v0.1. If you need a full editor, use `gpui` directly.
 - **Accessibility.** GPUI does not yet expose a platform accessibility API, so engram inherits that gap. Screen reader support is not available today.
 
 See [`CHANGELOG.md`](CHANGELOG.md) for release notes.

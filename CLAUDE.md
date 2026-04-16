@@ -99,7 +99,7 @@ For brand/trademark icons (logos of AI providers, editors, languages, etc.) engr
 
 ### TextField
 
-`components/text_field.rs` is derived from `crates/gpui/examples/input.rs` in `zed-industries/zed` (Apache-2.0), adapted to engram's theming. The file header carries the explicit derivation notice required by Apache-2.0 §4(b). It is the only component with a custom `gpui::Element` impl, its own actions namespace (`engram_text_field`), and a process-global key-binding registration (done in `engram_ui::init`). Word-by-word navigation, multi-line, and undo/redo are TODO — current scope is the single-line forms-and-search-box case.
+`components/text_field.rs` is derived from `crates/gpui/examples/input.rs` in `zed-industries/zed` (Apache-2.0), adapted to engram's theming. The file header carries the explicit derivation notice required by Apache-2.0 §4(b). It is the only component with a custom `gpui::Element` impl, its own actions namespace (`engram_text_field`), and a process-global key-binding registration (done in `engram_ui::init`). Word-by-word navigation, undo/redo (with consecutive-keystroke grouping), and opt-in multi-line mode (`TextField::multi_line()` — hard-wrap only) are implemented. Soft-wrap on width and word-double-click selection are still TODO.
 
 ## Conventions
 

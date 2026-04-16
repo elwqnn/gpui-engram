@@ -12,6 +12,9 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - `CHANGELOG.md` seeded from git history.
 - GitHub Actions CI workflow (`.github/workflows/ci.yml`): `cargo check`, `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`.
 - Unit tests for `ThumbMetrics` scrollbar math (`crates/engram-ui/src/components/scroll_metrics.rs`) covering degenerate viewports, short/tall content, thumb-top ↔ scroll round-trip, and the `SCROLLBAR_MIN_THUMB_RATIO` floor.
+- `TextField`: word-by-word navigation (Ctrl/Alt + Left/Right, plus shift-for-select and backspace/delete-for-word variants).
+- `TextField`: undo/redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z, Ctrl+Y) with consecutive typing and consecutive deletions grouped into a single step.
+- `TextField`: opt-in multi-line mode via `TextField::multi_line()` + `min_lines(n)` — Shift+Enter inserts a newline, Enter still submits, Up/Down navigate with preserved goal column, paste preserves newlines, height auto-grows. Hard-wrap only (no soft-wrap on width overflow).
 
 ### Changed
 - `gpui` / `gpui_platform` now pinned by `rev` (`3a5dc8e`) instead of `branch = "main"`, so builds are reproducible across contributors without relying on `Cargo.lock` catching drift.
