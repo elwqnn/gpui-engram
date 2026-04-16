@@ -255,6 +255,16 @@ impl RenderOnce for Pagination {
 mod tests {
     use super::*;
 
+    fn pages(slots: &[PageSlot]) -> Vec<Option<usize>> {
+        slots
+            .iter()
+            .map(|s| match s {
+                PageSlot::Page(p) => Some(*p),
+                PageSlot::Ellipsis => None,
+            })
+            .collect()
+    }
+
     #[test]
     fn slots_all_visible() {
         let slots = page_slots(1, 5, 5);
@@ -265,27 +275,103 @@ mod tests {
     #[test]
     fn slots_truncate_right() {
         let slots = page_slots(1, 20, 7);
-        // [1, 2, 3, 4, 5, …, 20]
-        assert!(matches!(slots.last(), Some(PageSlot::Page(20))));
-        assert!(slots.iter().any(|s| matches!(s, PageSlot::Ellipsis)));
+        assert_eq!(
+            pages(&slots),
+            vec![Some(1), Some(2), Some(3), Some(4), Some(5), Some(6), None, Some(20)],
+        );
+    }
+
+    #[test]
+    fn slots_truncate_left() {
+        let slots = page_slots(20, 20, 7);
+        assert_eq!(
+            pages(&slots),
+            vec![
+                Some(1),
+                None,
+                Some(15),
+                Some(16),
+                Some(17),
+                Some(18),
+                Some(19),
+                Some(20),
+            ],
+        );
     }
 
     #[test]
     fn slots_truncate_both() {
         let slots = page_slots(10, 20, 7);
-        // [1, …, 9, 10, 11, …, 20]
-        assert!(matches!(slots.first(), Some(PageSlot::Page(1))));
-        assert!(matches!(slots.last(), Some(PageSlot::Page(20))));
-        let ellipsis_count = slots
-            .iter()
-            .filter(|s| matches!(s, PageSlot::Ellipsis))
-            .count();
-        assert_eq!(ellipsis_count, 2);
+        assert_eq!(
+            pages(&slots),
+            vec![
+                Some(1),
+                None,
+                Some(8),
+                Some(9),
+                Some(10),
+                Some(11),
+                Some(12),
+                None,
+                Some(20),
+            ],
+        );
     }
 
     #[test]
     fn slots_single_page() {
-        let slots = page_slots(1, 1, 5);
-        assert_eq!(slots.len(), 1);
+        assert_eq!(page_slots(1, 1, 5).len(), 1);
+    }
+
+    #[test]
+    fn slots_zero_total_degrades_to_single() {
+        let slots = page_slots(1, 0, 5);
+        assert_eq!(pages(&slots), vec![Some(1)]);
+    }
+
+    #[test]
+    fn slots_boundary_page_two_does_not_produce_left_ellipsis() {
+        let slots = page_slots(2, 20, 7);
+        let first_ellipsis = slots
+            .iter()
+            .position(|s| matches!(s, PageSlot::Ellipsis))
+            .unwrap();
+        assert!(first_ellipsis > 2);
+    }
+
+    #[test]
+    fn slots_window_widens_when_pinned_left() {
+        let slots = page_slots(1, 20, 9);
+        let visible_pages: Vec<usize> = slots
+            .iter()
+            .filter_map(|s| match s {
+                PageSlot::Page(p) => Some(*p),
+                _ => None,
+            })
+            .collect();
+        assert!(visible_pages.contains(&1));
+        assert!(visible_pages.contains(&20));
+        assert_eq!(visible_pages.len(), slots.len() - 1);
+    }
+
+    #[test]
+    fn slots_exact_fit_no_ellipsis() {
+        let slots = page_slots(4, 7, 7);
+        assert_eq!(slots.len(), 7);
+        assert!(!slots.iter().any(|s| matches!(s, PageSlot::Ellipsis)));
+    }
+
+    #[test]
+    fn slots_no_adjacent_ellipsis_to_boundary() {
+        let slots = page_slots(3, 20, 7);
+        let page_numbers: Vec<usize> = slots
+            .iter()
+            .filter_map(|s| match s {
+                PageSlot::Page(p) => Some(*p),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(page_numbers[0], 1);
+        assert_eq!(*page_numbers.last().unwrap(), 20);
     }
 }

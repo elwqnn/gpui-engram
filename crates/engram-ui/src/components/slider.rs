@@ -216,11 +216,8 @@ impl RenderOnce for Slider {
                         let w = b.size.width.max(px(1.0));
                         let x = event.position.x - b.origin.x;
                         let frac = (x / w).clamp(0.0, 1.0);
-                        let mut val = min + frac * (max - min);
-                        if let Some(s) = step {
-                            val = (val / s).round() * s;
-                        }
-                        handler(val.clamp(min, max), window, cx);
+                        let val = value_from_fraction(frac, min, max, step);
+                        handler(val, window, cx);
                     })
                     .on_mouse_move(
                         move |event: &MouseMoveEvent, window, cx| {
@@ -229,11 +226,8 @@ impl RenderOnce for Slider {
                                 let w = b.size.width.max(px(1.0));
                                 let x = event.position.x - b.origin.x;
                                 let frac = (x / w).clamp(0.0, 1.0);
-                                let mut val = min + frac * (max - min);
-                                if let Some(s) = step {
-                                    val = (val / s).round() * s;
-                                }
-                                move_handler(val.clamp(min, max), window, cx);
+                                let val = value_from_fraction(frac, min, max, step);
+                                move_handler(val, window, cx);
                             }
                         },
                     )
@@ -261,5 +255,71 @@ impl RenderOnce for Slider {
             })
             .child(track)
             .when_some(value_label, |this, label| this.child(label))
+    }
+}
+
+/// Map a 0..=1 track fraction to a clamped, step-snapped slider value.
+///
+/// `frac` is pre-clamped by the caller; this fn handles step rounding and a
+/// final min/max clamp so rounding can never push the value past the range.
+fn value_from_fraction(frac: f32, min: f32, max: f32, step: Option<f32>) -> f32 {
+    let range = max - min;
+    let mut val = min + frac * range;
+    if let Some(s) = step
+        && s > 0.0
+    {
+        val = (val / s).round() * s;
+    }
+    val.clamp(min, max)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn zero_fraction_returns_min() {
+        assert_eq!(value_from_fraction(0.0, 0.0, 100.0, None), 0.0);
+    }
+
+    #[test]
+    fn full_fraction_returns_max() {
+        assert_eq!(value_from_fraction(1.0, 0.0, 100.0, None), 100.0);
+    }
+
+    #[test]
+    fn mid_fraction_returns_midpoint() {
+        assert_eq!(value_from_fraction(0.5, 0.0, 100.0, None), 50.0);
+    }
+
+    #[test]
+    fn step_snaps_to_nearest_increment() {
+        assert_eq!(value_from_fraction(0.27, 0.0, 100.0, Some(10.0)), 30.0);
+        assert_eq!(value_from_fraction(0.22, 0.0, 100.0, Some(10.0)), 20.0);
+    }
+
+    #[test]
+    fn step_rounding_stays_within_range() {
+        // A step that doesn't divide the range evenly: rounding could push
+        // the value past `max`, so clamp catches it.
+        let val = value_from_fraction(1.0, 0.0, 100.0, Some(30.0));
+        assert!(val <= 100.0);
+    }
+
+    #[test]
+    fn negative_range_reversed_bounds_still_clamp() {
+        let val = value_from_fraction(0.5, -50.0, 50.0, None);
+        assert_eq!(val, 0.0);
+    }
+
+    #[test]
+    fn zero_range_returns_min() {
+        assert_eq!(value_from_fraction(0.5, 42.0, 42.0, None), 42.0);
+    }
+
+    #[test]
+    fn invalid_step_ignored() {
+        // Step <= 0 should not divide-by-zero; it's simply ignored.
+        assert_eq!(value_from_fraction(0.5, 0.0, 100.0, Some(0.0)), 50.0);
     }
 }

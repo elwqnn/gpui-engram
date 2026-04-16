@@ -130,7 +130,7 @@ impl RenderOnce for Stepper {
             .when_some(
                 dec_enabled.then_some(self.on_change.clone()).flatten(),
                 |this, handler| {
-                    let next = (self.value - self.step).max(self.min);
+                    let next = step_value(self.value, -self.step, self.min, self.max);
                     this.on_click(move |_, window, cx| handler(next, window, cx))
                 },
             );
@@ -159,7 +159,7 @@ impl RenderOnce for Stepper {
             .when_some(
                 inc_enabled.then_some(self.on_change).flatten(),
                 |this, handler| {
-                    let next = (self.value + self.step).min(self.max);
+                    let next = step_value(self.value, self.step, self.min, self.max);
                     this.on_click(move |_, window, cx| handler(next, window, cx))
                 },
             );
@@ -188,5 +188,61 @@ impl RenderOnce for Stepper {
                     )
                     .child(inc),
             )
+    }
+}
+
+/// Apply a signed `delta` to `value` and clamp to `[min, max]`.
+///
+/// Used by the +/- handlers — a positive delta increments, a negative delta
+/// decrements. The clamp guards against overshoot when `value ± step` steps
+/// past the range boundary.
+fn step_value(value: f64, delta: f64, min: f64, max: f64) -> f64 {
+    (value + delta).clamp(min, max)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn increment_within_range() {
+        assert_eq!(step_value(5.0, 1.0, 0.0, 10.0), 6.0);
+    }
+
+    #[test]
+    fn decrement_within_range() {
+        assert_eq!(step_value(5.0, -1.0, 0.0, 10.0), 4.0);
+    }
+
+    #[test]
+    fn increment_past_max_clamps_to_max() {
+        assert_eq!(step_value(9.5, 1.0, 0.0, 10.0), 10.0);
+    }
+
+    #[test]
+    fn decrement_past_min_clamps_to_min() {
+        assert_eq!(step_value(0.5, -1.0, 0.0, 10.0), 0.0);
+    }
+
+    #[test]
+    fn at_max_no_overshoot() {
+        assert_eq!(step_value(10.0, 1.0, 0.0, 10.0), 10.0);
+    }
+
+    #[test]
+    fn at_min_no_undershoot() {
+        assert_eq!(step_value(0.0, -1.0, 0.0, 10.0), 0.0);
+    }
+
+    #[test]
+    fn negative_range_clamps_both_ends() {
+        assert_eq!(step_value(-5.0, -10.0, -10.0, 0.0), -10.0);
+        assert_eq!(step_value(-5.0, 10.0, -10.0, 0.0), 0.0);
+    }
+
+    #[test]
+    fn fractional_step_preserved() {
+        let v = step_value(1.0, 0.25, 0.0, 10.0);
+        assert!((v - 1.25).abs() < f64::EPSILON);
     }
 }

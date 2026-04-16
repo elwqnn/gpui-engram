@@ -158,3 +158,58 @@ impl RenderOnce for HighlightedLabel {
             .child(StyledText::new(self.label).with_default_highlights(&text_style, highlights))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ranges(text: &str, indices: &[usize]) -> Vec<Range<usize>> {
+        highlight_ranges(text, indices, HighlightStyle::default())
+            .into_iter()
+            .map(|(r, _)| r)
+            .collect()
+    }
+
+    #[test]
+    fn empty_indices_produces_no_runs() {
+        assert!(ranges("hello", &[]).is_empty());
+    }
+
+    #[test]
+    fn single_index_produces_one_char_run() {
+        assert_eq!(ranges("hello", &[1]), vec![1..2]);
+    }
+
+    #[test]
+    fn contiguous_indices_merge_into_one_run() {
+        assert_eq!(ranges("hello", &[0, 1, 2]), vec![0..3]);
+    }
+
+    #[test]
+    fn discontiguous_indices_produce_separate_runs() {
+        assert_eq!(ranges("hello", &[0, 2, 4]), vec![0..1, 2..3, 4..5]);
+    }
+
+    #[test]
+    fn mixed_gaps_split_runs() {
+        assert_eq!(ranges("abcdef", &[0, 1, 3, 4, 5]), vec![0..2, 3..6]);
+    }
+
+    #[test]
+    fn multibyte_character_indices_advance_by_utf8_len() {
+        let text = "héllo";
+        assert_eq!(ranges(text, &[0, 1]), vec![0..3]);
+        assert_eq!(ranges(text, &[1]), vec![1..3]);
+    }
+
+    #[test]
+    fn adjacent_runs_over_multibyte_merge() {
+        let text = "éé";
+        assert_eq!(ranges(text, &[0, 2]), vec![0..4]);
+    }
+
+    #[test]
+    fn final_index_at_last_byte_produces_trailing_run() {
+        assert_eq!(ranges("abc", &[2]), vec![2..3]);
+    }
+}
