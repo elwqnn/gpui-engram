@@ -575,6 +575,15 @@ fn text_field_renders(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
+fn text_field_multi_line_renders(cx: &mut TestAppContext) {
+    smoke(cx, |_, cx| {
+        let field =
+            cx.new(|cx| TextField::with_value(cx, "line one\nline two\nline three").multi_line());
+        field.into_any_element()
+    });
+}
+
+#[gpui::test]
 fn tooltip_view_renders(cx: &mut TestAppContext) {
     smoke(cx, |_, cx| {
         let tooltip = cx.new(|_| Tooltip::new("Tooltip text").meta("Secondary info"));
