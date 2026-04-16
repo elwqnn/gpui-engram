@@ -302,7 +302,6 @@ pub static STORIES: &[StoryEntry] = &[
 struct Gallery {
     selected_index: usize,
     current_view: Option<AnyView>,
-    selected_theme: SharedString,
     _appearance_sub: Option<Subscription>,
     _theme_watcher: Option<engram::theme::hot_reload::ThemeWatcher>,
 }
@@ -313,7 +312,6 @@ impl Gallery {
         Self {
             selected_index: 0,
             current_view,
-            selected_theme: cx.theme().name.clone(),
             _appearance_sub: None,
             _theme_watcher: None,
         }
@@ -433,13 +431,14 @@ impl Gallery {
 
     fn render_theme_switcher(&self, cx: &Context<Self>) -> impl IntoElement {
         let theme_names = engram::theme::ThemeRegistry::global(cx).names();
+        let current = cx.theme().name.clone();
         let weak = cx.entity().downgrade();
 
         h_flex()
             .gap(Spacing::XSmall.pixels())
             .flex_wrap()
             .children(theme_names.into_iter().map(|name| {
-                let is_current = name == self.selected_theme;
+                let is_current = name == current;
                 let weak = weak.clone();
                 let target = name.clone();
                 Button::new(SharedString::from(format!("theme-{name}")), name.clone())
@@ -455,7 +454,6 @@ impl Gallery {
                         weak.update(cx, |this, cx| {
                             this._appearance_sub = None;
                             if engram::theme::activate_theme(&target, cx).is_ok() {
-                                this.selected_theme = target;
                                 cx.notify();
                             }
                         })
@@ -531,8 +529,7 @@ fn main() {
                 let appearance_sub =
                     engram::theme::sync_with_system_appearance(Default::default(), window, cx);
                 let entity: Entity<Gallery> = cx.new(|cx| Gallery::new(window, cx));
-                entity.update(cx, |gallery, cx| {
-                    gallery.selected_theme = cx.theme().name.clone();
+                entity.update(cx, |gallery, _cx| {
                     gallery._appearance_sub = Some(appearance_sub);
                     gallery._theme_watcher = theme_watcher.take();
                 });
