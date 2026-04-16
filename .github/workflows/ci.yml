@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, v0.1]
+  pull_request:
+    branches: [main, v0.1]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  check:
+    name: cargo check / clippy / fmt / test (linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system deps (gpui Wayland/X11)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libx11-dev libxi-dev libxrandr-dev libxcursor-dev \
+            libfontconfig1-dev libssl-dev pkg-config mold
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt, clippy
+          cache: true
+          cache-workspaces: |
+            . -> target
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy --all-targets
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: cargo test -p engram-ui
+        run: cargo test -p engram-ui --no-fail-fast
+
+      - name: cargo test -p engram-theme
+        run: cargo test -p engram-theme --no-fail-fast
