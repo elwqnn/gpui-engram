@@ -297,10 +297,7 @@ impl TextField {
             kind,
             EditKind::Insert | EditKind::DeleteBack | EditKind::DeleteForward
         );
-        if groupable
-            && self.pending_edit_kind == Some(kind)
-            && !self.undo_stack.is_empty()
-        {
+        if groupable && self.pending_edit_kind == Some(kind) && !self.undo_stack.is_empty() {
             self.pending_edit_kind = Some(kind);
             return;
         }
@@ -1220,11 +1217,7 @@ impl Element for TextElement {
                 // Extend to end-of-line when the selection continues onto a
                 // following row, so the highlight visually covers the newline.
                 let extend_eol = selected_range.end > row_end && row_idx + 1 < rows.len();
-                let right = if extend_eol {
-                    x1 + px(6.0)
-                } else {
-                    x1
-                };
+                let right = if extend_eol { x1 + px(6.0) } else { x1 };
                 let top = bounds.top() + line_height * row_idx as f32;
                 quads.push(fill(
                     Bounds::from_corners(
@@ -1422,7 +1415,6 @@ fn next_word_boundary(content: &str, offset: usize) -> usize {
         })
         .unwrap_or(content.len())
 }
-
 
 /// Helper for callers that just want a focused field with an initial value.
 pub fn text_field(cx: &mut App, initial: impl Into<String>) -> Entity<TextField> {

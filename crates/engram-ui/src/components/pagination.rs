@@ -278,7 +278,16 @@ mod tests {
         let slots = page_slots(1, 20, 7);
         assert_eq!(
             pages(&slots),
-            vec![Some(1), Some(2), Some(3), Some(4), Some(5), Some(6), None, Some(20)],
+            vec![
+                Some(1),
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(5),
+                Some(6),
+                None,
+                Some(20)
+            ],
         );
     }
 
