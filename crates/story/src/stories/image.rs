@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::prelude::*;
 use gpui_engram_ui::components::image::center_crop_square;
 
-const BALCONY: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../balcony.jpg");
+const BALCONY: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/balcony.jpg");
 
 pub struct ImageStory {
     circle_source: gpui::ImageSource,
