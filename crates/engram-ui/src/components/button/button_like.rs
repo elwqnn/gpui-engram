@@ -330,6 +330,7 @@ impl ButtonLikeRounding {
 
 /// Shared chrome behind every engram button. See the module docs.
 #[derive(IntoElement)]
+#[must_use = "ButtonLike does nothing unless rendered"]
 pub struct ButtonLike {
     pub(super) base: Div,
     pub(super) id: ElementId,

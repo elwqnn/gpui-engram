@@ -167,6 +167,7 @@ pub enum ToggleButtonGroupStyle {
 /// A group of mutually exclusive toggle buttons, visually joined as a
 /// segmented control.
 #[derive(IntoElement)]
+#[must_use = "ToggleButtonGroup does nothing unless rendered"]
 pub struct ToggleButtonGroup<T: ButtonBuilder, const N: usize> {
     group_name: SharedString,
     buttons: [T; N],

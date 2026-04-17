@@ -22,6 +22,7 @@ use crate::traits::{ClickHandler, Clickable, Disableable};
 
 /// A single segment in a [`Breadcrumb`] path.
 #[derive(IntoElement)]
+#[must_use = "BreadcrumbItem does nothing unless rendered"]
 pub struct BreadcrumbItem {
     id: ElementId,
     label: SharedString,
@@ -114,6 +115,7 @@ impl RenderOnce for BreadcrumbItem {
 
 /// A horizontal navigation path.
 #[derive(IntoElement)]
+#[must_use = "Breadcrumb does nothing unless rendered"]
 pub struct Breadcrumb {
     items: Vec<AnyElement>,
     separator: IconName,

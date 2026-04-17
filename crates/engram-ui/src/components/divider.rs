@@ -11,6 +11,7 @@ pub enum DividerOrientation {
 
 /// A 1px line rendered in the theme's `border_variant` color.
 #[derive(IntoElement)]
+#[must_use = "Divider does nothing unless rendered"]
 pub struct Divider {
     orientation: DividerOrientation,
 }

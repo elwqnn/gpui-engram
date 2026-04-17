@@ -50,6 +50,7 @@ impl HeadlineSize {
 
 /// A headline element used to emphasize text and create visual hierarchy.
 #[derive(IntoElement)]
+#[must_use = "Headline does nothing unless rendered"]
 pub struct Headline {
     base: LabelLike,
     size: HeadlineSize,

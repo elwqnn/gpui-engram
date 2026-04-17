@@ -17,6 +17,7 @@ use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
 
 #[derive(IntoElement)]
+#[must_use = "KeyBinding does nothing unless rendered"]
 pub struct KeyBinding {
     keys: Vec<SharedString>,
 }

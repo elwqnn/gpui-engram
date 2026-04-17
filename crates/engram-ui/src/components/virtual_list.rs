@@ -76,6 +76,7 @@ impl VirtualListScrollHandle {
 }
 
 /// Lazy-rendered list of uniform-height items.
+#[must_use = "VirtualList does nothing unless rendered"]
 pub struct VirtualList {
     inner: gpui::UniformList,
     scroll_handle: Option<VirtualListScrollHandle>,

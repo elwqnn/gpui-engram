@@ -43,6 +43,7 @@ impl CopyButtonState {
 
 /// An icon button that copies a string to the clipboard on click.
 #[derive(IntoElement)]
+#[must_use = "CopyButton does nothing unless rendered"]
 pub struct CopyButton {
     id: ElementId,
     message: SharedString,

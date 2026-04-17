@@ -22,6 +22,7 @@ use crate::traits::handlers::F32Handler;
 
 /// A horizontal slider for selecting a numeric value within a range.
 #[derive(IntoElement)]
+#[must_use = "Slider does nothing unless rendered"]
 pub struct Slider {
     id: ElementId,
     value: f32,

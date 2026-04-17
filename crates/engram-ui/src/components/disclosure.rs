@@ -16,6 +16,7 @@ use crate::components::icon::{IconName, IconSize};
 use crate::traits::{ClickHandler, Clickable, Disableable, ToggleState, Toggleable};
 
 #[derive(IntoElement)]
+#[must_use = "Disclosure does nothing unless rendered"]
 pub struct Disclosure {
     id: ElementId,
     is_open: bool,

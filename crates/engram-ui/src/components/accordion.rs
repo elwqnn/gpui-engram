@@ -25,6 +25,7 @@ use crate::traits::{ClickHandler, Clickable, Disableable, StyledExt};
 
 /// A single collapsible section inside an [`Accordion`].
 #[derive(IntoElement)]
+#[must_use = "AccordionItem does nothing unless rendered"]
 pub struct AccordionItem {
     id: ElementId,
     title: SharedString,
@@ -120,6 +121,7 @@ impl RenderOnce for AccordionItem {
 
 /// A vertically stacked set of [`AccordionItem`]s.
 #[derive(IntoElement)]
+#[must_use = "Accordion does nothing unless rendered"]
 pub struct Accordion {
     children: Vec<AnyElement>,
 }

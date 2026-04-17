@@ -15,6 +15,7 @@ use gpui::{
 
 /// A horizontal bar that communicates the status of a process.
 #[derive(IntoElement)]
+#[must_use = "ProgressBar does nothing unless rendered"]
 pub struct ProgressBar {
     value: f32,
     max_value: f32,
@@ -95,6 +96,7 @@ impl RenderOnce for ProgressBar {
 
 /// A circular progress indicator that draws an arc from the top, clockwise.
 #[derive(IntoElement)]
+#[must_use = "CircularProgress does nothing unless rendered"]
 pub struct CircularProgress {
     value: f32,
     max_value: f32,

@@ -72,6 +72,7 @@ const HOVER_GROUP: &str = "engram_list_item";
 /// state, disabled state, click handlers, tree-style indentation, and
 /// right-click / hover callbacks.
 #[derive(IntoElement)]
+#[must_use = "ListItem does nothing unless rendered"]
 pub struct ListItem {
     id: ElementId,
     disabled: bool,
@@ -327,6 +328,7 @@ impl RenderOnce for ListItem {
 /// A vertical container for [`ListItem`]s with an optional header label and a
 /// message displayed when the list has no children.
 #[derive(IntoElement)]
+#[must_use = "List does nothing unless rendered"]
 pub struct List {
     header: Option<SharedString>,
     empty_message: SharedString,

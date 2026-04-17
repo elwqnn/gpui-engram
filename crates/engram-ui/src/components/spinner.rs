@@ -16,6 +16,7 @@ use crate::components::icon::{IconName, IconSize};
 
 /// An animated spinner icon.
 #[derive(IntoElement)]
+#[must_use = "Spinner does nothing unless rendered"]
 pub struct Spinner {
     icon: IconName,
     size: IconSize,

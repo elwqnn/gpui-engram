@@ -15,6 +15,7 @@ use crate::components::label::label_like::{LabelCommon, LabelLike, LabelSize, Li
 
 /// A single-string text label.
 #[derive(IntoElement)]
+#[must_use = "Label does nothing unless rendered"]
 pub struct Label {
     base: LabelLike,
     text: SharedString,

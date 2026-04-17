@@ -38,6 +38,7 @@ impl NavigableEntry {
 
 /// An element wrapper that handles keyboard navigation between children.
 #[derive(IntoElement)]
+#[must_use = "Navigable does nothing unless rendered"]
 pub struct Navigable {
     child: AnyElement,
     entries: Vec<NavigableEntry>,

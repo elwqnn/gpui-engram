@@ -55,6 +55,7 @@ pub enum SplitButtonStyle {
 
 /// A button with two parts separated by a thin divider.
 #[derive(IntoElement)]
+#[must_use = "SplitButton does nothing unless rendered"]
 pub struct SplitButton {
     left: SplitButtonKind,
     right: SplitButtonKind,

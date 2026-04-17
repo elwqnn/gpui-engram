@@ -15,6 +15,7 @@ use engram_theme::Color;
 
 /// A button that looks like a web link and opens a URL on click.
 #[derive(IntoElement)]
+#[must_use = "ButtonLink does nothing unless rendered"]
 pub struct ButtonLink {
     label: SharedString,
     label_size: LabelSize,

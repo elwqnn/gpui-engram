@@ -114,6 +114,7 @@ pub trait LabelCommon {
 /// express what you need — every escape hatch is a place engram's
 /// typography can drift.
 #[derive(IntoElement)]
+#[must_use = "LabelLike does nothing unless rendered"]
 pub struct LabelLike {
     pub(super) base: Div,
     size: LabelSize,

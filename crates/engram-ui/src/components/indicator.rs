@@ -17,6 +17,7 @@ enum IndicatorKind {
 }
 
 #[derive(IntoElement)]
+#[must_use = "Indicator does nothing unless rendered"]
 pub struct Indicator {
     kind: IndicatorKind,
     color: Color,

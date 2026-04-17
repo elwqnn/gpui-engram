@@ -27,6 +27,7 @@ pub enum SkeletonShape {
 
 /// An animated loading placeholder.
 #[derive(IntoElement)]
+#[must_use = "Skeleton does nothing unless rendered"]
 pub struct Skeleton {
     width: Pixels,
     height: Pixels,

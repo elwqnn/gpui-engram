@@ -23,6 +23,7 @@ use crate::traits::{Clickable, Disableable, ToggleState, Toggleable};
 
 /// A text button with an optional leading icon.
 #[derive(IntoElement)]
+#[must_use = "Button does nothing unless rendered"]
 pub struct Button {
     base: ButtonLike,
     label: SharedString,

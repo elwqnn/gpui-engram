@@ -76,6 +76,7 @@ impl Severity {
 /// An inline message strip with an icon, title, optional description, and
 /// optional action area on the right (e.g. a Button).
 #[derive(IntoElement)]
+#[must_use = "Banner does nothing unless rendered"]
 pub struct Banner {
     severity: Severity,
     title: SharedString,
@@ -180,6 +181,7 @@ impl RenderOnce for Banner {
 /// but with a heavier card style suitable for stacking in a corner of the
 /// window.
 #[derive(IntoElement)]
+#[must_use = "Notification does nothing unless rendered"]
 pub struct Notification {
     severity: Severity,
     title: SharedString,

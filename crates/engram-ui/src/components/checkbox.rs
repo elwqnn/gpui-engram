@@ -50,6 +50,7 @@ impl CheckboxSize {
 /// (including `Indeterminate`), a disabled state, and a click handler that
 /// receives the **new** state after the click flipped it.
 #[derive(IntoElement)]
+#[must_use = "Checkbox does nothing unless rendered"]
 pub struct Checkbox {
     id: ElementId,
     state: ToggleState,

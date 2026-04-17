@@ -20,6 +20,7 @@ use crate::traits::{Clickable, Disableable, ToggleState, Toggleable};
 
 /// A square icon-only button.
 #[derive(IntoElement)]
+#[must_use = "IconButton does nothing unless rendered"]
 pub struct IconButton {
     base: ButtonLike,
     icon: IconName,

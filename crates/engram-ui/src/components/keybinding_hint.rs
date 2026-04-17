@@ -21,6 +21,7 @@ use crate::components::stack::h_flex;
 
 /// An inline keybinding hint with optional prefix and suffix text.
 #[derive(IntoElement)]
+#[must_use = "KeybindingHint does nothing unless rendered"]
 pub struct KeybindingHint {
     prefix: Option<SharedString>,
     suffix: Option<SharedString>,

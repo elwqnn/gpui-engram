@@ -59,6 +59,7 @@ impl AvatarSize {
 /// `name` is still stored for accessibility hints and as a fallback if the
 /// image fails to load.
 #[derive(IntoElement)]
+#[must_use = "Avatar does nothing unless rendered"]
 pub struct Avatar {
     name: SharedString,
     size: AvatarSize,
@@ -158,6 +159,7 @@ impl RenderOnce for Avatar {
 /// their diameter. Pass them in display order; the last avatar is drawn on
 /// top.
 #[derive(IntoElement)]
+#[must_use = "Facepile does nothing unless rendered"]
 pub struct Facepile {
     avatars: SmallVec<[Avatar; 4]>,
 }
@@ -222,6 +224,7 @@ pub enum ChipSize {
 /// Chips default to a fully rounded (pill) shape. Use `.outline(true)` for
 /// a transparent-background variant with a colored border.
 #[derive(IntoElement)]
+#[must_use = "Chip does nothing unless rendered"]
 pub struct Chip {
     label: SharedString,
     style: ChipStyle,
@@ -308,6 +311,7 @@ impl RenderOnce for Chip {
 
 /// A small numeric badge. Counts above 99 render as `99+`.
 #[derive(IntoElement)]
+#[must_use = "CountBadge does nothing unless rendered"]
 pub struct CountBadge {
     count: usize,
 }

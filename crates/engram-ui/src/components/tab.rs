@@ -30,6 +30,7 @@ use crate::traits::{ClickHandler, Disableable, ToggleState, Toggleable};
 
 /// One selectable tab inside a [`TabBar`].
 #[derive(IntoElement)]
+#[must_use = "Tab does nothing unless rendered"]
 pub struct Tab {
     id: ElementId,
     label: SharedString,
@@ -170,6 +171,7 @@ impl RenderOnce for Tab {
 
 /// A horizontal strip of [`Tab`]s.
 #[derive(IntoElement)]
+#[must_use = "TabBar does nothing unless rendered"]
 pub struct TabBar {
     children: SmallVec<[AnyElement; 6]>,
 }

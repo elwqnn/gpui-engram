@@ -29,6 +29,7 @@ enum PageSlot {
 
 /// A page navigation control with prev/next buttons and numbered pages.
 #[derive(IntoElement)]
+#[must_use = "Pagination does nothing unless rendered"]
 pub struct Pagination {
     id: ElementId,
     current_page: usize,

@@ -294,6 +294,7 @@ impl From<IconName> for IconSource {
 
 /// An icon resolved from an [`IconSource`].
 #[derive(IntoElement)]
+#[must_use = "Icon does nothing unless rendered"]
 pub struct Icon {
     source: IconSource,
     size: IconSize,

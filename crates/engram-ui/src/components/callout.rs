@@ -23,6 +23,7 @@ pub enum BorderPosition {
 
 /// A block-level callout for displaying important information.
 #[derive(IntoElement)]
+#[must_use = "Callout does nothing unless rendered"]
 pub struct Callout {
     severity: Severity,
     icon: Option<IconName>,

@@ -22,6 +22,7 @@ use crate::traits::{
 
 /// One row inside a tree view.
 #[derive(IntoElement)]
+#[must_use = "TreeViewItem does nothing unless rendered"]
 pub struct TreeViewItem {
     id: ElementId,
     label: SharedString,

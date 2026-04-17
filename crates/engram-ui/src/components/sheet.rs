@@ -41,6 +41,7 @@ pub enum SheetSide {
 
 /// A panel overlay surface.
 #[derive(IntoElement)]
+#[must_use = "Sheet does nothing unless rendered"]
 pub struct Sheet {
     side: SheetSide,
     title: Option<SharedString>,

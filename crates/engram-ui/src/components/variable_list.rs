@@ -102,6 +102,7 @@ impl VariableListScrollHandle {
 
 /// Lazy-rendered list of variable-height rows.
 #[derive(IntoElement)]
+#[must_use = "VariableList does nothing unless rendered"]
 pub struct VariableList {
     scroll_handle: VariableListScrollHandle,
     render_item: Option<Box<RenderItemFn>>,

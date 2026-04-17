@@ -13,6 +13,7 @@ use crate::components::icon::{Icon, IconSize};
 
 /// A small overlay decoration rendered on top of an icon.
 #[derive(IntoElement)]
+#[must_use = "IconDecoration does nothing unless rendered"]
 pub struct IconDecoration {
     color: Hsla,
     size: Pixels,
@@ -63,6 +64,7 @@ impl RenderOnce for IconDecoration {
 
 /// An icon with an optional decoration overlay.
 #[derive(IntoElement)]
+#[must_use = "DecoratedIcon does nothing unless rendered"]
 pub struct DecoratedIcon {
     icon: Icon,
     icon_size: IconSize,

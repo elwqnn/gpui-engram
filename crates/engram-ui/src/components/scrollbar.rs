@@ -45,6 +45,7 @@ pub enum ScrollbarAxis {
 
 /// A styled scroll indicator for a [`gpui::ScrollHandle`].
 #[derive(IntoElement)]
+#[must_use = "Scrollbar does nothing unless rendered"]
 pub struct Scrollbar {
     scroll_handle: ScrollHandle,
     axis: ScrollbarAxis,

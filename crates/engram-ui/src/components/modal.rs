@@ -51,6 +51,7 @@ fn backdrop() -> Hsla {
 
 /// A centered card with optional title, body children, and footer row.
 #[derive(IntoElement)]
+#[must_use = "Modal does nothing unless rendered"]
 pub struct Modal {
     title: Option<SharedString>,
     children: SmallVec<[AnyElement; 4]>,

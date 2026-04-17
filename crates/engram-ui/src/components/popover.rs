@@ -58,6 +58,7 @@ pub const POPOVER_OFFSET: Pixels = px(4.0);
 /// Stateless: just a card with a border, background, padding, and shadow-like
 /// elevation via the `surface_elevated` theme color. Children fill the body.
 #[derive(IntoElement)]
+#[must_use = "Popover does nothing unless rendered"]
 pub struct Popover {
     children: SmallVec<[AnyElement; 2]>,
     min_width: Option<Pixels>,

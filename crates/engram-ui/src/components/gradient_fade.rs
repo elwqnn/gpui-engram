@@ -11,6 +11,7 @@ use engram_theme::ActiveTheme;
 
 /// A gradient overlay that fades from a solid color to transparent.
 #[derive(IntoElement)]
+#[must_use = "GradientFade does nothing unless rendered"]
 pub struct GradientFade {
     base_bg: Hsla,
     hover_bg: Hsla,

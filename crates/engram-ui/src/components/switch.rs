@@ -14,6 +14,7 @@ use crate::components::stack::h_flex;
 use crate::traits::{Disableable, ToggleHandler, ToggleState, Toggleable};
 
 #[derive(IntoElement)]
+#[must_use = "Switch does nothing unless rendered"]
 pub struct Switch {
     id: ElementId,
     state: ToggleState,

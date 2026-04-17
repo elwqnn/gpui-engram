@@ -30,6 +30,7 @@ use gpui::{
 /// if neither `width` nor `height` is given, the image lays out at its
 /// intrinsic size.
 #[derive(IntoElement)]
+#[must_use = "Image does nothing unless rendered"]
 pub struct Image {
     source: ImageSource,
     width: Option<Pixels>,

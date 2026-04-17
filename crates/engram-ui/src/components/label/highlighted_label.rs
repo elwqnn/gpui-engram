@@ -13,6 +13,7 @@ use crate::components::label::label_like::{LabelCommon, LabelLike, LabelSize, Li
 
 /// A label that highlights specific characters (identified by byte position).
 #[derive(IntoElement)]
+#[must_use = "HighlightedLabel does nothing unless rendered"]
 pub struct HighlightedLabel {
     base: LabelLike,
     label: SharedString,

@@ -30,6 +30,7 @@ impl DescriptionEntry {
 
 /// A vertical list of label-value pairs.
 #[derive(IntoElement)]
+#[must_use = "DescriptionList does nothing unless rendered"]
 pub struct DescriptionList {
     entries: Vec<DescriptionEntry>,
     label_width: f32,

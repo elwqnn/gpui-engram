@@ -20,6 +20,7 @@ use crate::traits::handlers::F64Handler;
 
 /// A compact numeric control with decrement/increment buttons.
 #[derive(IntoElement)]
+#[must_use = "Stepper does nothing unless rendered"]
 pub struct Stepper {
     id: ElementId,
     value: f64,

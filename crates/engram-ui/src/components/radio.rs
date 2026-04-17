@@ -16,6 +16,7 @@ use crate::traits::{Disableable, ToggleHandler, ToggleState, Toggleable};
 
 /// A radio button with optional inline label.
 #[derive(IntoElement)]
+#[must_use = "Radio does nothing unless rendered"]
 pub struct Radio {
     id: ElementId,
     state: ToggleState,
