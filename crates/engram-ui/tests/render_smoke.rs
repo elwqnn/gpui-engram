@@ -747,8 +747,8 @@ fn json_theme_registry_pipeline_renders(cx: &mut TestAppContext) {
         let theme = gpui_engram_theme::Theme::from_json_bytes(&bytes)
             .expect("gruvbox_dark.json must parse as a Theme");
         gpui_engram_theme::ThemeRegistry::global_mut(cx).insert(theme);
-        gpui_engram_theme::activate_theme("Gruvbox Dark", cx)
-            .expect("Gruvbox Dark must be registered after insert");
+        gpui_engram_theme::activate_theme("Gruvbox Dark Hard", cx)
+            .expect("Gruvbox Dark Hard must be registered after insert");
         v_flex()
             .gap(Spacing::Small.pixels())
             .child(Banner::new(Severity::Info, "Info from JSON theme"))

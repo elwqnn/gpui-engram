@@ -1,10 +1,10 @@
 {
-  "name": "Gruvbox Light",
+  "name": "Gruvbox Light Hard",
   "appearance": "light",
   "colors": {
-    "background": "#fbf1c7ff",
+    "background": "#f9f5d7ff",
     "surface_background": "#f2e5bcff",
-    "elevated_surface_background": "#f9f5d7ff",
+    "elevated_surface_background": "#fbf1c7ff",
     "border": "#d5c4a1ff",
     "border_variant": "#ebdbb2ff",
     "border_focused": "#076678ff",
