@@ -77,7 +77,8 @@ fn spawn_poll_task(dir: PathBuf, rx: Receiver<notify::Result<Event>>, cx: &mut A
             }
             if touched {
                 let dir = dir.clone();
-                cx.update(|cx| load_all_themes(&dir, cx));
+                #[allow(clippy::let_unit_value, unused_must_use)]
+                let _ = cx.update(|cx| load_all_themes(&dir, cx));
             }
 
             cx.background_executor()

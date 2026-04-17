@@ -18,6 +18,15 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ### Changed
 - `gpui` / `gpui_platform` pinned by `rev` (`302e591`, latest zed `main` as of 2026-04-17) instead of `branch = "main"`, so builds are reproducible across contributors without relying on `Cargo.lock` catching drift.
+- `gpui` workspace dep now specifies `version = "0.2.2"` alongside `git` + `rev`. Local builds keep using the git rev; `cargo publish` strips the git source and publishes crates that resolve `gpui` from crates.io. Pattern borrowed from `longbridge/gpui-component`.
+- `engram-theme` and `engram-ui` now re-export `anyhow::{Error, Result}` at their crate roots, so downstream users can write `engram::theme::Result` without adding `anyhow` to their `Cargo.toml`.
+
+### Added
+- Prelude now exports `ButtonBuilder` and `ScrollStrategy`.
+- `#[must_use]` on every renderable component struct (`Button`, `Icon`, `Label`, …) so forgotten-to-render builders fail the lint instead of compiling silently.
+
+### Renamed
+- `VirtualList::with_scrollbar` → `VirtualList::scrollbar`, `VirtualList::with_width_from_item` → `VirtualList::width_from_item`, `VariableList::with_scrollbar` → `VariableList::scrollbar`. Engram builder-method convention is one-word imperative.
 - Workspace `engram` added to `[workspace.dependencies]` so `story` no longer uses a one-off `path = ...` override.
 
 ## [0.1.0] — pre-release (on `v0.1` branch)
