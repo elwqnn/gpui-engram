@@ -1208,7 +1208,7 @@ fn virtual_list_renders(cx: &mut TestAppContext) {
                 .collect()
         })
         .track_scroll(handle)
-        .with_scrollbar()
+        .scrollbar()
         .h_full()
         .into_any_element()
     });
@@ -1221,7 +1221,7 @@ fn variable_list_renders(cx: &mut TestAppContext) {
         VariableList::new(handle, |ix, _window, _cx| {
             Label::new(format!("row {ix}")).into_any_element()
         })
-        .with_scrollbar()
+        .scrollbar()
         .h_full()
         .into_any_element()
     });

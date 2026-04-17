@@ -38,7 +38,7 @@ impl Render for VirtualListStory {
                                 .collect()
                         })
                         .track_scroll(handle.clone())
-                        .with_scrollbar()
+                        .scrollbar()
                         .h_full(),
                     )
                     .into_any_element(),

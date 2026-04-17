@@ -25,7 +25,7 @@
 //!     items[range].iter().map(|item| row(item)).collect()
 //! })
 //! .track_scroll(handle.clone())
-//! .with_scrollbar()
+//! .scrollbar()
 //! .h_full()
 //! ```
 
@@ -111,7 +111,7 @@ impl VirtualList {
 
     /// Overlay an engram-styled scrollbar on the right edge of the list.
     /// The thumb is draggable and the track is click-to-jump.
-    pub fn with_scrollbar(mut self) -> Self {
+    pub fn scrollbar(mut self) -> Self {
         if self.scroll_handle.is_none() {
             let handle = VirtualListScrollHandle::default();
             self.inner = self.inner.track_scroll(&handle.inner);
@@ -129,7 +129,7 @@ impl VirtualList {
     }
 
     /// Pick which item is measured to determine uniform row height.
-    pub fn with_width_from_item(mut self, item_index: Option<usize>) -> Self {
+    pub fn width_from_item(mut self, item_index: Option<usize>) -> Self {
         self.inner = self.inner.with_width_from_item(item_index);
         self
     }
@@ -154,7 +154,7 @@ impl IntoElement for VirtualList {
         let wrapper = div().id("virtual-list-wrapper").size_full();
 
         if show_scrollbar {
-            let handle = scroll_handle.expect("with_scrollbar attaches a handle");
+            let handle = scroll_handle.expect("scrollbar attaches a handle");
             let move_handle = handle.clone();
             let up_handle = handle;
             wrapper

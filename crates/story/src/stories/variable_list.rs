@@ -42,7 +42,7 @@ impl Render for VariableListStory {
                                 )))
                                 .into_any_element()
                         })
-                        .with_scrollbar()
+                        .scrollbar()
                         .h_full(),
                     )
                     .into_any_element(),

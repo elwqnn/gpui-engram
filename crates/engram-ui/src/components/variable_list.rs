@@ -32,7 +32,7 @@
 //! VariableList::new(handle.clone(), move |ix, _window, _cx| {
 //!     row(&items[ix]).into_any_element()
 //! })
-//! .with_scrollbar()
+//! .scrollbar()
 //! .h_full()
 //! ```
 
@@ -127,7 +127,7 @@ impl VariableList {
 
     /// Overlay an engram-styled scrollbar on the right edge of the list.
     /// The thumb is draggable and the track is click-to-jump.
-    pub fn with_scrollbar(mut self) -> Self {
+    pub fn scrollbar(mut self) -> Self {
         self.show_scrollbar = true;
         self
     }
