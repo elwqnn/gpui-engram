@@ -2,6 +2,15 @@
 
 A small GPUI-based component library - a Zed-flavored UI toolkit built on `gpui` from the (unreleased) Zed source.
 
+<p align="center">
+  <img src="assets/showcase-default-dark.jpg" alt="engram showcase (default dark theme)" width="100%">
+</p>
+
+<p align="center">
+  <img src="assets/showcase-default-light.jpg" alt="engram showcase (default light theme)" width="49%">
+  <img src="assets/showcase-gruvbox-hard-dark.jpg" alt="engram showcase (Gruvbox Dark Hard theme)" width="49%">
+</p>
+
 `engram` is a Cargo workspace with three crates that downstream apps consume through the umbrella `engram` crate:
 
 ```rust
