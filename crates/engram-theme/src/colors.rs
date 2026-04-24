@@ -108,7 +108,7 @@ pub struct StatusColors {
 /// ~150). We add tokens only when a real component needs them.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ThemeColors {
-    // Surfaces ---------------------------------------------------------------
+    // Surfaces
     /// Window / root background.
     pub background: Hsla,
     /// Grounded surface (panel, sidebar).
@@ -116,7 +116,7 @@ pub struct ThemeColors {
     /// Elevated surface (popover, dropdown, card).
     pub elevated_surface_background: Hsla,
 
-    // Borders ----------------------------------------------------------------
+    // Borders
     /// Default border color.
     pub border: Hsla,
     /// Subtle border used for dividers between related content.
@@ -131,27 +131,27 @@ pub struct ThemeColors {
     /// which gain a border on state change don't reflow.
     pub border_transparent: Hsla,
 
-    // Foreground text --------------------------------------------------------
+    // Foreground text
     pub text: Hsla,
     pub text_muted: Hsla,
     pub text_placeholder: Hsla,
     pub text_disabled: Hsla,
     pub text_accent: Hsla,
 
-    // Foreground icons -------------------------------------------------------
+    // Foreground icons
     pub icon: Hsla,
     pub icon_muted: Hsla,
     pub icon_disabled: Hsla,
     pub icon_accent: Hsla,
 
-    // Filled (opaque) interactive element backgrounds ------------------------
+    // Filled (opaque) interactive element backgrounds
     pub element_background: Hsla,
     pub element_hover: Hsla,
     pub element_active: Hsla,
     pub element_selected: Hsla,
     pub element_disabled: Hsla,
 
-    // Ghost (transparent) interactive element backgrounds --------------------
+    // Ghost (transparent) interactive element backgrounds
     /// Resting background for a ghost element. Almost always fully
     /// transparent - kept as a token so the layering reads consistently with
     /// `element_background`.
@@ -161,28 +161,9 @@ pub struct ThemeColors {
     pub ghost_element_selected: Hsla,
     pub ghost_element_disabled: Hsla,
 
-    // Status / semantic ------------------------------------------------------
+    // Status / semantic
     pub status: StatusColors,
 
-    // Accent (primary brand color) -------------------------------------------
+    // Accent (primary brand color)
     pub accent: Hsla,
-}
-
-/// Compact helper for writing [`Hsla`] constants with hue in degrees.
-pub(crate) const fn hsl(h_deg: f32, s: f32, l: f32) -> Hsla {
-    Hsla {
-        h: h_deg / 360.0,
-        s,
-        l,
-        a: 1.0,
-    }
-}
-
-pub(crate) const fn hsla(h_deg: f32, s: f32, l: f32, a: f32) -> Hsla {
-    Hsla {
-        h: h_deg / 360.0,
-        s,
-        l,
-        a,
-    }
 }
