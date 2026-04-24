@@ -171,7 +171,7 @@ impl RenderOnce for Stepper {
             .when_some(self.label, |this, label| {
                 this.child(
                     Label::new(label)
-                        .size(LabelSize::Default)
+                        .size(LabelSize::Small)
                         .color(label_color),
                 )
             })
@@ -183,7 +183,7 @@ impl RenderOnce for Stepper {
                     .child(
                         div().min_w(px(32.0)).flex().justify_center().child(
                             Label::new(value_text)
-                                .size(LabelSize::Default)
+                                .size(LabelSize::Small)
                                 .color(label_color),
                         ),
                     )

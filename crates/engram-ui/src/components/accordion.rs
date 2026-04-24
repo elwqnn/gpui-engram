@@ -96,7 +96,7 @@ impl RenderOnce for AccordionItem {
             .child(disclosure)
             .child(
                 Label::new(self.title)
-                    .size(LabelSize::Default)
+                    .size(LabelSize::Small)
                     .color(label_color),
             );
 

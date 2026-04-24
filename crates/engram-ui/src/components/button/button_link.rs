@@ -29,7 +29,7 @@ impl ButtonLink {
         Self {
             label: label.into(),
             link: link.into(),
-            label_size: LabelSize::Default,
+            label_size: LabelSize::Small,
             label_color: Color::Default,
             show_icon: true,
         }

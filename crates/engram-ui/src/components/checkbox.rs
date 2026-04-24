@@ -23,25 +23,25 @@ pub enum CheckboxSize {
 impl CheckboxSize {
     const fn box_size(self) -> gpui::Pixels {
         match self {
-            Self::Small => px(14.0),
-            Self::Default => px(16.0),
-            Self::Large => px(20.0),
+            Self::Small => px(12.0),
+            Self::Default => px(14.0),
+            Self::Large => px(16.0),
         }
     }
 
     const fn icon_size(self) -> IconSize {
         match self {
-            Self::Small => IconSize::XSmall,
-            Self::Default => IconSize::Small,
-            Self::Large => IconSize::Medium,
+            Self::Small => IconSize::Indicator,
+            Self::Default => IconSize::XSmall,
+            Self::Large => IconSize::Small,
         }
     }
 
     const fn label_size(self) -> LabelSize {
         match self {
-            Self::Small => LabelSize::Small,
-            Self::Default => LabelSize::Default,
-            Self::Large => LabelSize::Large,
+            Self::Small => LabelSize::XSmall,
+            Self::Default => LabelSize::XSmall,
+            Self::Large => LabelSize::Small,
         }
     }
 }

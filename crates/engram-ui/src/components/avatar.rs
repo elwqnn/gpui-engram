@@ -299,7 +299,7 @@ impl RenderOnce for Chip {
             .self_start()
             .px(px_x.pixels())
             .py(px_y.pixels())
-            .rounded(Radius::Full.pixels())
+            .rounded(Radius::Medium.pixels())
             .border_1()
             .border_color(border)
             .bg(bg)

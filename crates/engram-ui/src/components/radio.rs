@@ -132,7 +132,7 @@ impl RenderOnce for Radio {
             .when_some(self.label, |this, label| {
                 this.child(
                     Label::new(label)
-                        .size(LabelSize::Default)
+                        .size(LabelSize::Small)
                         .color(label_color),
                 )
             })

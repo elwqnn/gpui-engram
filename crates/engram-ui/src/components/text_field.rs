@@ -1368,7 +1368,7 @@ impl Render for TextField {
                     // (lines * line_height), and the outer box follows.
                     el.py(Spacing::XSmall.pixels())
                 } else {
-                    el.h(px(28.0)).items_center()
+                    el.h(px(24.0)).items_center()
                 }
             })
             .px(Spacing::Small.pixels())

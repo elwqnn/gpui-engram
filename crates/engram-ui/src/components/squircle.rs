@@ -137,7 +137,7 @@ impl RenderOnce for Squircle {
             SquircleFill::Transparent => None,
             SquircleFill::Surface => Some(colors.surface_background),
             SquircleFill::Elevated => Some(colors.elevated_surface_background),
-            SquircleFill::Muted => Some(colors.element_background),
+            SquircleFill::Muted => Some(colors.element_selected),
             SquircleFill::Accent => Some(colors.accent),
         };
         let border_color: Option<Hsla> = self.bordered.then_some(colors.border);

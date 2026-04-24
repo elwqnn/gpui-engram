@@ -115,7 +115,7 @@ impl RenderOnce for Tab {
 
         let row = h_flex()
             .id(self.id.clone())
-            .h(px(28.0))
+            .h(px(24.0))
             .px(Spacing::Medium.pixels())
             .gap(Spacing::XSmall.pixels())
             .items_center()

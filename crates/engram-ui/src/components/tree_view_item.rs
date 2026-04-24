@@ -116,7 +116,7 @@ impl RenderOnce for TreeViewItem {
         let selected_border = colors.border.opacity(0.4);
 
         let indentation_line = h_flex()
-            .h(px(28.0))
+            .h(px(24.0))
             .w(px(22.0))
             .flex_none()
             .justify_center()
@@ -127,7 +127,7 @@ impl RenderOnce for TreeViewItem {
                 .id("inner_tree_view_item")
                 .cursor_pointer()
                 .size_full()
-                .h(px(28.0))
+                .h(px(24.0))
                 .pl(px(2.0))
                 .pr(Spacing::Small.pixels())
                 .gap(Spacing::Medium.pixels())

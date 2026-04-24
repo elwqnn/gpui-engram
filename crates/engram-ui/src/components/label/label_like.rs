@@ -140,7 +140,7 @@ impl LabelLike {
     pub fn new() -> Self {
         Self {
             base: div(),
-            size: LabelSize::Default,
+            size: LabelSize::Small,
             weight: None,
             line_height_style: LineHeightStyle::default(),
             color: Color::Default,

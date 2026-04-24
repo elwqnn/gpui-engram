@@ -91,7 +91,7 @@ impl RenderOnce for BreadcrumbItem {
 
         h_flex()
             .id(self.id)
-            .gap(Spacing::XXSmall.pixels())
+            .gap(Spacing::Small.pixels())
             .when(clickable, |this| this.cursor_pointer())
             .when_some(self.icon, |this, icon| {
                 this.child(Icon::new(icon).size(IconSize::Small).color(icon_color))

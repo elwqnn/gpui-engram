@@ -93,7 +93,7 @@ impl RenderOnce for DescriptionList {
                     .child(
                         div().w(px(self.label_width)).flex_shrink_0().child(
                             Label::new(entry.label)
-                                .size(LabelSize::Default)
+                                .size(LabelSize::Small)
                                 .color(Color::Muted),
                         ),
                     )
