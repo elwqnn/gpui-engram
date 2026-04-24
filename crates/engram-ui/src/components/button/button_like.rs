@@ -29,7 +29,6 @@ use gpui::{
 use gpui_engram_theme::{ActiveTheme, Radius};
 use smallvec::SmallVec;
 
-use crate::styles::ElevationIndex;
 use crate::traits::{
     ClickHandler, Clickable, Disableable, StyledExt, ToggleState, Toggleable, TooltipBuilder,
 };
@@ -45,7 +44,7 @@ pub trait SelectableButton: Toggleable {
 }
 
 /// The "every button speaks the same dialect" trait - id, style, size,
-/// tooltip, elevation layer, tab index, focus tracking.
+/// tooltip, tab index, focus tracking.
 ///
 /// Like the rest of engram's behavioural traits in [`crate::traits`], this
 /// is **not** used as a generic bound. It exists so every button-like
@@ -67,12 +66,6 @@ pub trait ButtonCommon: Clickable + Disableable {
 
     /// Insert this button into the keyboard tab order at `tab_index`.
     fn tab_index(self, tab_index: isize) -> Self;
-
-    /// Tell the button which [`ElevationIndex`] surface it sits on. The
-    /// rendered background of [`ButtonStyle::Filled`] / [`ButtonStyle::Outlined`]
-    /// is computed from this layer so the button has the right contrast
-    /// against its parent surface.
-    fn layer(self, layer: ElevationIndex) -> Self;
 
     /// Track focus on the given handle. The button itself does not own the
     /// handle - it's borrowed from a parent view that wants to programmatically
@@ -156,7 +149,7 @@ impl TintColor {
 }
 
 impl ButtonStyle {
-    pub(super) fn enabled(self, _layer: Option<ElevationIndex>, cx: &App) -> ButtonLikeStyles {
+    pub(super) fn enabled(self, cx: &App) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
             // Inverted "primary" - fg as background, bg as label. Mirrors
@@ -188,7 +181,7 @@ impl ButtonStyle {
         }
     }
 
-    pub(super) fn hovered(self, _layer: Option<ElevationIndex>, cx: &App) -> ButtonLikeStyles {
+    pub(super) fn hovered(self, cx: &App) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
             ButtonStyle::Filled => ButtonLikeStyles {
@@ -218,7 +211,7 @@ impl ButtonStyle {
         }
     }
 
-    pub(super) fn active(self, _layer: Option<ElevationIndex>, cx: &App) -> ButtonLikeStyles {
+    pub(super) fn active(self, cx: &App) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
             ButtonStyle::Filled => ButtonLikeStyles {
@@ -251,11 +244,7 @@ impl ButtonStyle {
         }
     }
 
-    pub(super) fn disabled_styles(
-        self,
-        _layer: Option<ElevationIndex>,
-        cx: &App,
-    ) -> ButtonLikeStyles {
+    pub(super) fn disabled_styles(self, cx: &App) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
             ButtonStyle::Filled => ButtonLikeStyles {
@@ -352,7 +341,6 @@ pub struct ButtonLike {
     pub(super) disabled: bool,
     pub(super) selected: bool,
     pub(super) selected_style: Option<ButtonStyle>,
-    pub(super) layer: Option<ElevationIndex>,
     pub(super) focus_handle: Option<FocusHandle>,
     pub(super) tab_index: Option<isize>,
     pub(super) cursor_style: CursorStyle,
@@ -375,7 +363,6 @@ impl ButtonLike {
             disabled: false,
             selected: false,
             selected_style: None,
-            layer: None,
             focus_handle: None,
             tab_index: None,
             cursor_style: CursorStyle::PointingHand,
@@ -484,11 +471,6 @@ impl ButtonCommon for ButtonLike {
         self
     }
 
-    fn layer(mut self, layer: ElevationIndex) -> Self {
-        self.layer = Some(layer);
-        self
-    }
-
     fn track_focus(mut self, focus_handle: &FocusHandle) -> Self {
         self.focus_handle = Some(focus_handle.clone());
         self
@@ -507,10 +489,10 @@ impl RenderOnce for ButtonLike {
             self.style
         };
 
-        let enabled = style.enabled(self.layer, cx);
-        let hovered = style.hovered(self.layer, cx);
-        let active = style.active(self.layer, cx);
-        let disabled_palette = style.disabled_styles(self.layer, cx);
+        let enabled = style.enabled(cx);
+        let hovered = style.hovered(cx);
+        let active = style.active(cx);
+        let disabled_palette = style.disabled_styles(cx);
         let is_outlined = style.is_outlined();
         let is_disabled = self.disabled;
         let cursor = self.cursor_style;

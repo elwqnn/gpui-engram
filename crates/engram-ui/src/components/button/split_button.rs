@@ -16,7 +16,6 @@ use gpui_engram_theme::ActiveTheme;
 use crate::components::button::button_like::{ButtonCommon, ButtonLike, ButtonStyle};
 use crate::components::button::icon_button::IconButton;
 use crate::components::stack::h_flex;
-use crate::styles::ElevationIndex;
 
 /// What kind of element either side of the split button contains.
 pub enum SplitButtonKind {
@@ -95,8 +94,8 @@ impl RenderOnce for SplitButton {
         let right = self.right.with_style(ButtonStyle::Transparent);
 
         let render_kind = |k: SplitButtonKind| match k {
-            SplitButtonKind::ButtonLike(b) => b.layer(ElevationIndex::Surface).into_any_element(),
-            SplitButtonKind::IconButton(b) => b.layer(ElevationIndex::Surface).into_any_element(),
+            SplitButtonKind::ButtonLike(b) => b.into_any_element(),
+            SplitButtonKind::IconButton(b) => b.into_any_element(),
         };
 
         h_flex()

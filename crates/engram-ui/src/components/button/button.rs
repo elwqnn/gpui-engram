@@ -18,7 +18,6 @@ use crate::components::button::button_like::{
 use crate::components::icon::{Icon, IconName, IconSize};
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::h_flex;
-use crate::styles::ElevationIndex;
 use crate::traits::{Clickable, Disableable, ToggleState, Toggleable};
 
 /// A text button with an optional leading icon.
@@ -100,11 +99,6 @@ impl ButtonCommon for Button {
 
     fn tab_index(mut self, tab_index: isize) -> Self {
         self.base = self.base.tab_index(tab_index);
-        self
-    }
-
-    fn layer(mut self, layer: ElevationIndex) -> Self {
-        self.base = self.base.layer(layer);
         self
     }
 

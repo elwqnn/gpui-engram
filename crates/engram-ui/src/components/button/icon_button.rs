@@ -15,7 +15,6 @@ use crate::components::button::button_like::{
     ButtonCommon, ButtonLike, ButtonSize, ButtonStyle, SelectableButton,
 };
 use crate::components::icon::{Icon, IconName, IconSize};
-use crate::styles::ElevationIndex;
 use crate::traits::{Clickable, Disableable, ToggleState, Toggleable};
 
 /// A square icon-only button.
@@ -108,11 +107,6 @@ impl ButtonCommon for IconButton {
 
     fn tab_index(mut self, tab_index: isize) -> Self {
         self.base = self.base.tab_index(tab_index);
-        self
-    }
-
-    fn layer(mut self, layer: ElevationIndex) -> Self {
-        self.base = self.base.layer(layer);
         self
     }
 
