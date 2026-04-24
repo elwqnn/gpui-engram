@@ -10,17 +10,31 @@
 //! built-in theme assets and by [`hot_reload`](crate::hot_reload) when it
 //! spots a file change.
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use serde::{Deserialize, Serialize};
 
 use crate::default::{dark as default_dark, light as default_light};
 use crate::refinement::ThemeColorsRefinement;
 use crate::{Appearance, Theme};
 
+/// Current theme JSON schema version. Incremented on breaking changes to
+/// the on-disk format. Files without a `schema_version` field are assumed
+/// to be v1 for backward compatibility with themes written before the
+/// field was introduced.
+pub const THEME_SCHEMA_VERSION: u32 = 1;
+
+fn default_schema_version() -> u32 {
+    THEME_SCHEMA_VERSION
+}
+
 /// On-disk representation of a theme. Deserialized from JSON.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ThemeContent {
+    /// Schema version this document was written against. Defaults to the
+    /// current [`THEME_SCHEMA_VERSION`] when absent.
+    #[serde(default = "default_schema_version")]
+    pub schema_version: u32,
     pub name: String,
     pub appearance: AppearanceContent,
     #[serde(default)]
@@ -74,6 +88,7 @@ impl ThemeContent {
     /// users can copy and edit.
     pub fn from_theme(theme: &Theme) -> Self {
         Self {
+            schema_version: THEME_SCHEMA_VERSION,
             name: theme.name.to_string(),
             appearance: theme.appearance.into(),
             colors: ThemeColorsRefinement::from_full(&theme.colors),
@@ -85,8 +100,26 @@ impl Theme {
     /// Parse a theme from JSON bytes. The JSON document must have a `name`,
     /// an `appearance` (`"light"` or `"dark"`), and an optional `colors`
     /// object containing partial overrides.
+    ///
+    /// An optional `schema_version` field is honored if present. Documents
+    /// written against a version *newer* than [`THEME_SCHEMA_VERSION`] are
+    /// rejected - this crate does not guess at future fields.
     pub fn from_json_bytes(bytes: &[u8]) -> Result<Self> {
         let content: ThemeContent = serde_json::from_slice(bytes)?;
+        if content.schema_version == 0 {
+            return Err(anyhow!(
+                "theme `{}` declares schema_version 0; versions start at 1",
+                content.name
+            ));
+        }
+        if content.schema_version > THEME_SCHEMA_VERSION {
+            return Err(anyhow!(
+                "theme `{}` declares schema_version {} but this crate only understands up to {}",
+                content.name,
+                content.schema_version,
+                THEME_SCHEMA_VERSION
+            ));
+        }
         Ok(content.into_theme())
     }
 

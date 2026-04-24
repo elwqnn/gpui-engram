@@ -23,7 +23,7 @@ pub use anyhow::{Error, Result};
 
 pub use crate::colors::{Color, StatusColors, ThemeColors};
 pub use crate::default::{dark as default_dark, light as default_light};
-pub use crate::loader::{AppearanceContent, ThemeContent};
+pub use crate::loader::{AppearanceContent, THEME_SCHEMA_VERSION, ThemeContent};
 pub use crate::refinement::{StatusColorsRefinement, ThemeColorsRefinement};
 pub use crate::registry::{ThemeRegistry, activate_theme};
 pub use crate::system_appearance::sync_with_system_appearance;
@@ -88,6 +88,7 @@ pub fn set_theme(theme: Theme, cx: &mut App) {
 /// [`ThemeRegistry`] and activates the dark theme. Apps that want a
 /// different default can call [`activate_theme`] (or [`set_theme`]) right
 /// after.
+///
 pub fn init(cx: &mut App) {
     let mut registry = ThemeRegistry::new();
     registry.insert(default_dark());
