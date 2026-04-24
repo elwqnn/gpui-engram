@@ -19,53 +19,53 @@ use crate::colors::{StatusColors, ThemeColors};
 #[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct StatusColorsRefinement {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub info: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub info_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub info_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub success: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub success_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub success_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub warning: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub warning_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub warning_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub error: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub error_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub error_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hint: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hint_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hint_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hidden: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hidden_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub hidden_border: Option<Hsla>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ignored: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ignored_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ignored_border: Option<Hsla>,
 }
 
@@ -189,80 +189,80 @@ impl StatusColorsRefinement {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ThemeColorsRefinement {
-    // Surfaces ---------------------------------------------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Surfaces
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub surface_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub elevated_surface_background: Option<Hsla>,
 
-    // Borders ----------------------------------------------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Borders
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border_variant: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border_focused: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border_selected: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border_disabled: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub border_transparent: Option<Hsla>,
 
-    // Foreground text --------------------------------------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Foreground text
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub text: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub text_muted: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub text_placeholder: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub text_disabled: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub text_accent: Option<Hsla>,
 
-    // Foreground icons -------------------------------------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Foreground icons
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub icon: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub icon_muted: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub icon_disabled: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub icon_accent: Option<Hsla>,
 
-    // Filled (opaque) interactive element backgrounds ------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Filled (opaque) interactive element backgrounds
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub element_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub element_hover: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub element_active: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub element_selected: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub element_disabled: Option<Hsla>,
 
-    // Ghost (transparent) interactive element backgrounds --------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Ghost (transparent) interactive element backgrounds
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ghost_element_background: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ghost_element_hover: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ghost_element_active: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ghost_element_selected: Option<Hsla>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub ghost_element_disabled: Option<Hsla>,
 
-    // Status / semantic ------------------------------------------------------
+    // Status / semantic
     #[serde(default, skip_serializing_if = "StatusColorsRefinement::is_empty")]
     pub status: StatusColorsRefinement,
 
-    // Accent (primary brand color) -------------------------------------------
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Accent (primary brand color)
+    #[serde(default, with = "crate::color_string::opt", skip_serializing_if = "Option::is_none")]
     pub accent: Option<Hsla>,
 }
 

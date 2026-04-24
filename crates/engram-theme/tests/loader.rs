@@ -148,6 +148,31 @@ fn round_trip_theme_content_json_is_stable_after_one_pass() {
 /// whenever the hand-tuned defaults in `engram-theme/src/default.rs`
 /// change.
 #[test]
+fn accepts_hex_rgb_hsl_oklch_in_same_document() {
+    let json = r##"{
+        "name": "Mixed Formats",
+        "appearance": "dark",
+        "colors": {
+            "background": "#1d2021",
+            "text": "rgb(235 219 178)",
+            "border": "hsl(40 20% 40%)",
+            "accent": "oklch(0.72 0.09 235)"
+        }
+    }"##;
+
+    let theme = gpui_engram_theme::Theme::from_json_str(json).unwrap();
+
+    // Each format resolved; values are non-zero / non-default.
+    assert_ne!(theme.colors.background, default_dark().colors.background);
+    assert_ne!(theme.colors.text, default_dark().colors.text);
+    assert_ne!(theme.colors.border, default_dark().colors.border);
+    assert_ne!(theme.colors.accent, default_dark().colors.accent);
+
+    // Hex round-trip sanity.
+    assert_eq!(theme.colors.background, hex("#1d2021ff"));
+}
+
+#[test]
 #[ignore = "regeneration helper - run manually"]
 fn regenerate_builtin_fixtures() {
     let assets = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))

@@ -3,6 +3,7 @@
 
 #![forbid(unsafe_code)]
 
+mod color_string;
 mod colors;
 mod default;
 pub mod hot_reload;
