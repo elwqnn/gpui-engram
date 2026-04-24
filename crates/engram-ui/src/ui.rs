@@ -29,6 +29,7 @@ pub use traits::*;
 /// it once per `App`, after [`gpui_engram_theme::init`] and before rendering any
 /// components that depend on those bindings.
 pub fn init(cx: &mut gpui::App) {
+    assets::load_bundled_fonts(cx);
     components::text_field::bind_text_field_keys(cx);
     components::menu::bind_menu_keys(cx);
 }

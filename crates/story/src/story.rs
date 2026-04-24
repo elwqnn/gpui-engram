@@ -343,6 +343,7 @@ impl Render for Gallery {
 
         h_flex()
             .size_full()
+            .font_family("Funnel Sans")
             .bg(colors.background)
             // ---- Sidebar ----
             .child(
