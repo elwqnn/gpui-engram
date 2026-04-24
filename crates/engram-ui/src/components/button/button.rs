@@ -115,10 +115,11 @@ impl ButtonCommon for Button {
 }
 
 impl RenderOnce for Button {
-    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let is_disabled = self.base.disabled;
         let is_selected = self.base.selected;
         let size = self.base.size;
+        let style = self.base.style;
         let (pad_x, pad_y) = padding_for(size);
         let text_size = text_size_for(size);
         let icon_size = icon_size_for(size);
@@ -128,7 +129,7 @@ impl RenderOnce for Button {
         } else if is_selected {
             Color::Selected
         } else {
-            Color::Default
+            style.label_color_override(cx).unwrap_or(Color::Default)
         };
 
         self.base.padding(pad_x.pixels(), pad_y.pixels()).child(
@@ -144,24 +145,24 @@ impl RenderOnce for Button {
 
 fn padding_for(size: ButtonSize) -> (Spacing, Spacing) {
     match size {
-        ButtonSize::Compact => (Spacing::Small, Spacing::XXSmall),
-        ButtonSize::Default => (Spacing::Large, Spacing::Small),
-        ButtonSize::Large => (Spacing::XLarge, Spacing::Medium),
+        ButtonSize::Compact => (Spacing::XSmall, Spacing::XXSmall),
+        ButtonSize::Default => (Spacing::Small, Spacing::XXSmall),
+        ButtonSize::Large => (Spacing::Large, Spacing::Small),
     }
 }
 
 fn text_size_for(size: ButtonSize) -> LabelSize {
     match size {
-        ButtonSize::Compact => LabelSize::Small,
-        ButtonSize::Default => LabelSize::Default,
-        ButtonSize::Large => LabelSize::Large,
+        ButtonSize::Compact => LabelSize::XSmall,
+        ButtonSize::Default => LabelSize::Small,
+        ButtonSize::Large => LabelSize::Default,
     }
 }
 
 fn icon_size_for(size: ButtonSize) -> IconSize {
     match size {
-        ButtonSize::Compact => IconSize::Small,
-        ButtonSize::Default => IconSize::Medium,
-        ButtonSize::Large => IconSize::Large,
+        ButtonSize::Compact => IconSize::XSmall,
+        ButtonSize::Default => IconSize::Small,
+        ButtonSize::Large => IconSize::Medium,
     }
 }

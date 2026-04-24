@@ -123,10 +123,11 @@ impl ButtonCommon for IconButton {
 }
 
 impl RenderOnce for IconButton {
-    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let is_disabled = self.base.disabled;
         let is_selected = self.base.selected;
         let size = self.base.size;
+        let style = self.base.style;
         let pad = padding_for(size);
         let icon_size = self.icon_size.unwrap_or_else(|| icon_size_for(size));
 
@@ -139,7 +140,7 @@ impl RenderOnce for IconButton {
         } else if is_selected {
             Color::Selected
         } else {
-            Color::Default
+            style.label_color_override(cx).unwrap_or(Color::Default)
         };
 
         self.base
@@ -153,16 +154,16 @@ impl RenderOnce for IconButton {
 /// reasonable at `ButtonSize::Default`.
 fn padding_for(size: ButtonSize) -> Pixels {
     match size {
-        ButtonSize::Compact => px(4.0),
-        ButtonSize::Default => px(6.0),
-        ButtonSize::Large => px(8.0),
+        ButtonSize::Compact => px(2.0),
+        ButtonSize::Default => px(4.0),
+        ButtonSize::Large => px(6.0),
     }
 }
 
 fn icon_size_for(size: ButtonSize) -> IconSize {
     match size {
-        ButtonSize::Compact => IconSize::Small,
-        ButtonSize::Default => IconSize::Medium,
-        ButtonSize::Large => IconSize::Large,
+        ButtonSize::Compact => IconSize::XSmall,
+        ButtonSize::Default => IconSize::Small,
+        ButtonSize::Large => IconSize::Medium,
     }
 }

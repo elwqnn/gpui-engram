@@ -155,42 +155,31 @@ impl TintColor {
     }
 }
 
-/// Pick the right element background for the surface this button sits on.
-///
-/// Each [`ElevationIndex`] gets a slightly different "blank canvas" tone so
-/// a filled button on a popover doesn't look identical to one on the root
-/// background. Falls back to `element_background` when the layer wasn't
-/// set, which is the historical engram default.
-fn element_bg_for_layer(layer: Option<ElevationIndex>, cx: &App) -> Hsla {
-    let colors = cx.theme().colors();
-    match layer {
-        Some(ElevationIndex::Background) | None => colors.element_background,
-        Some(ElevationIndex::Surface) => colors.surface_background,
-        Some(ElevationIndex::ElevatedSurface) => colors.elevated_surface_background,
-        Some(ElevationIndex::ModalSurface) => colors.background,
-    }
-}
-
 impl ButtonStyle {
-    pub(super) fn enabled(self, layer: Option<ElevationIndex>, cx: &App) -> ButtonLikeStyles {
+    pub(super) fn enabled(self, _layer: Option<ElevationIndex>, cx: &App) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
+            // Inverted "primary" - fg as background, bg as label. Mirrors
+            // the engram draft's `.btn.primary`.
             ButtonStyle::Filled => ButtonLikeStyles {
-                background: element_bg_for_layer(layer, cx),
+                background: colors.text,
                 border: transparent_black(),
             },
             ButtonStyle::Tinted(tint) => tint.enabled_styles(cx),
+            // Transparent fill with a strong border - clearly distinct from
+            // `Subtle` (which has a filled surface).
             ButtonStyle::Outlined => ButtonLikeStyles {
-                background: element_bg_for_layer(layer, cx),
-                border: colors.border,
+                background: transparent_black(),
+                border: colors.border_selected,
             },
             ButtonStyle::OutlinedGhost => ButtonLikeStyles {
                 background: transparent_black(),
                 border: colors.border_variant,
             },
+            // Filled surface with a border - mirrors the draft's `.btn.subtle`.
             ButtonStyle::Subtle => ButtonLikeStyles {
-                background: colors.ghost_element_background,
-                border: transparent_black(),
+                background: colors.element_background,
+                border: colors.border,
             },
             ButtonStyle::Transparent => ButtonLikeStyles {
                 background: transparent_black(),
@@ -203,7 +192,7 @@ impl ButtonStyle {
         let colors = cx.theme().colors();
         match self {
             ButtonStyle::Filled => ButtonLikeStyles {
-                background: colors.element_hover,
+                background: colors.text_muted,
                 border: transparent_black(),
             },
             // Tinted backgrounds are alpha-blended from the status
@@ -212,15 +201,15 @@ impl ButtonStyle {
             ButtonStyle::Tinted(tint) => tint.hovered_styles(cx),
             ButtonStyle::Outlined => ButtonLikeStyles {
                 background: colors.ghost_element_hover,
-                border: colors.border,
+                border: colors.border_selected,
             },
             ButtonStyle::OutlinedGhost => ButtonLikeStyles {
                 background: colors.ghost_element_hover,
                 border: colors.border_variant,
             },
             ButtonStyle::Subtle => ButtonLikeStyles {
-                background: colors.ghost_element_hover,
-                border: transparent_black(),
+                background: colors.element_hover,
+                border: colors.border,
             },
             ButtonStyle::Transparent => ButtonLikeStyles {
                 background: transparent_black(),
@@ -233,7 +222,7 @@ impl ButtonStyle {
         let colors = cx.theme().colors();
         match self {
             ButtonStyle::Filled => ButtonLikeStyles {
-                background: colors.element_active,
+                background: colors.text_placeholder,
                 border: transparent_black(),
             },
             ButtonStyle::Tinted(tint) => {
@@ -244,16 +233,16 @@ impl ButtonStyle {
                 }
             }
             ButtonStyle::Outlined => ButtonLikeStyles {
-                background: colors.element_active,
-                border: colors.border,
+                background: colors.ghost_element_active,
+                border: colors.border_selected,
             },
             ButtonStyle::OutlinedGhost => ButtonLikeStyles {
                 background: transparent_black(),
                 border: colors.border_variant,
             },
             ButtonStyle::Subtle => ButtonLikeStyles {
-                background: colors.ghost_element_active,
-                border: transparent_black(),
+                background: colors.element_active,
+                border: colors.border,
             },
             ButtonStyle::Transparent => ButtonLikeStyles {
                 background: transparent_black(),
@@ -269,21 +258,21 @@ impl ButtonStyle {
     ) -> ButtonLikeStyles {
         let colors = cx.theme().colors();
         match self {
-            ButtonStyle::Filled | ButtonStyle::Outlined => ButtonLikeStyles {
+            ButtonStyle::Filled => ButtonLikeStyles {
+                background: colors.element_disabled,
+                border: transparent_black(),
+            },
+            ButtonStyle::Subtle => ButtonLikeStyles {
                 background: colors.element_disabled,
                 border: colors.border_disabled,
             },
-            ButtonStyle::Tinted(_) => ButtonLikeStyles {
+            ButtonStyle::Outlined | ButtonStyle::Tinted(_) => ButtonLikeStyles {
                 background: colors.element_disabled,
                 border: colors.border_disabled,
             },
             ButtonStyle::OutlinedGhost => ButtonLikeStyles {
                 background: transparent_black(),
                 border: colors.border_disabled,
-            },
-            ButtonStyle::Subtle => ButtonLikeStyles {
-                background: colors.ghost_element_disabled,
-                border: transparent_black(),
             },
             ButtonStyle::Transparent => ButtonLikeStyles {
                 background: transparent_black(),
@@ -296,12 +285,36 @@ impl ButtonStyle {
     /// `border_1()` call in render so non-bordered styles don't reserve a
     /// pixel of border space.
     pub(super) fn is_outlined(self) -> bool {
-        matches!(self, ButtonStyle::Outlined | ButtonStyle::OutlinedGhost)
+        matches!(
+            self,
+            ButtonStyle::Outlined
+                | ButtonStyle::OutlinedGhost
+                | ButtonStyle::Subtle
+                | ButtonStyle::Tinted(_)
+        )
+    }
+
+    /// Override for the label / icon color when the button's chrome demands
+    /// a non-default foreground (e.g. `Filled` is an inverted slab, so the
+    /// label must flip to the app background to stay legible).
+    pub(super) fn label_color_override(
+        self,
+        cx: &App,
+    ) -> Option<gpui_engram_theme::Color> {
+        match self {
+            ButtonStyle::Filled => Some(gpui_engram_theme::Color::Custom(
+                cx.theme().colors().background,
+            )),
+            _ => None,
+        }
     }
 }
 
 /// Button height presets. These also drive the inner padding for [`Button`]
-/// and [`IconButton`].
+/// and [`IconButton`]. The engram scale runs tight - [`ButtonSize::Default`]
+/// matches the spec's 24px compact control height; [`ButtonSize::Large`] is
+/// what most component libraries call "default"; [`ButtonSize::Compact`] is
+/// a further-condensed toolbar / inline-action variant.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ButtonSize {
     Compact,

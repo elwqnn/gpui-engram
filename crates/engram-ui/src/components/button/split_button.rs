@@ -103,15 +103,18 @@ impl RenderOnce for SplitButton {
             .rounded_sm()
             .overflow_hidden()
             .when(is_filled, |this| {
-                this.bg(colors.element_background).shadow(vec![BoxShadow {
-                    color: hsla(0.0, 0.0, 0.0, 0.16),
-                    offset: point(px(0.), px(1.)),
-                    blur_radius: px(0.),
-                    spread_radius: px(0.),
-                }])
+                this.bg(colors.element_hover)
+                    .border_1()
+                    .border_color(colors.border)
+                    .shadow(vec![BoxShadow {
+                        color: hsla(0.0, 0.0, 0.0, 0.16),
+                        offset: point(px(0.), px(1.)),
+                        blur_radius: px(0.),
+                        spread_radius: px(0.),
+                    }])
             })
             .when(is_outlined, |this| {
-                this.border_1().border_color(colors.border.opacity(0.8))
+                this.border_1().border_color(colors.border_selected)
             })
             .child(div().flex_grow().child(render_kind(left)))
             .child(div().h(relative(0.8)).w_px().bg(divider_color))
