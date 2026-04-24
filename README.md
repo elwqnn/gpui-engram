@@ -5,7 +5,7 @@
 <h1 align="center">engram</h1>
 
 <p align="center">
-  A small GPUI-based component library - a Zed-flavored UI toolkit built on <code>gpui</code> from the (unreleased) Zed source.
+  A small GPUI component library, following Zed's idiomatic implementation.
 </p>
 
 <p align="center">
