@@ -473,8 +473,8 @@ fn menu_renders_all_item_kinds(cx: &mut TestAppContext) {
         let menu = cx.new(|cx| {
             Menu::new(cx)
                 .header("File")
-                .entry_with_icon("m-new", IconName::Plus, "New", |_, _, _| {})
-                .keybinding_entry("m-save", "Save", ["Ctrl", "S"], |_, _, _| {})
+                .entry_with_icon("m-new", IconName::Plus, "New", |_, _| {})
+                .keybinding_entry("m-save", "Save", ["Ctrl", "S"], |_, _| {})
                 .separator()
                 .disabled_entry("m-dis", "Disabled")
         });
@@ -499,8 +499,8 @@ fn menu_select_next_advances_cursor(cx: &mut TestAppContext) {
     let menu = vtx.new(|cx| {
         Menu::new(cx)
             .header("File")
-            .entry("m-new", "New", |_, _, _| {})
-            .entry("m-save", "Save", |_, _, _| {})
+            .entry("m-new", "New", |_, _| {})
+            .entry("m-save", "Save", |_, _| {})
     });
 
     menu.update_in(vtx, |m, window, cx| {
@@ -523,8 +523,8 @@ fn dropdown_menu_renders(cx: &mut TestAppContext) {
     smoke(cx, |_, cx| {
         cx.new(|cx| {
             DropdownMenu::new("dd", "Pick one", cx, |menu| {
-                menu.entry("a", "Alpha", |_, _, _| {})
-                    .entry("b", "Beta", |_, _, _| {})
+                menu.entry("a", "Alpha", |_, _| {})
+                    .entry("b", "Beta", |_, _| {})
             })
         })
         .into_any_element()
@@ -1089,11 +1089,14 @@ fn slider_renders(cx: &mut TestAppContext) {
 fn hover_card_renders(cx: &mut TestAppContext) {
     smoke(cx, |_, cx| {
         let card = cx.new(|_| {
-            HoverCard::new()
-                .title("User Profile")
-                .min_width(px(200.0))
-                .child(Label::new("Alice Smith"))
-                .child(Label::new("alice@example.com").color(gpui_engram_theme::Color::Muted))
+            HoverCard::new(|_, _| {
+                v_flex()
+                    .child(Label::new("Alice Smith"))
+                    .child(Label::new("alice@example.com").color(gpui_engram_theme::Color::Muted))
+                    .into_any_element()
+            })
+            .title("User Profile")
+            .min_width(px(200.0))
         });
         card.into_any_element()
     });

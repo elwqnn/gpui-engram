@@ -32,6 +32,7 @@ use crate::components::popover::anchored_popover;
 use crate::traits::{Clickable, Disableable, Toggleable};
 
 pub struct DropdownMenu {
+    id: SharedString,
     label: SharedString,
     menu: Entity<Menu>,
     is_open: bool,
@@ -49,7 +50,7 @@ impl DropdownMenu {
     /// Create a dropdown with a trigger label and a menu built from the
     /// provided closure.
     pub fn new(
-        _id: impl Into<SharedString>,
+        id: impl Into<SharedString>,
         label: impl Into<SharedString>,
         cx: &mut Context<Self>,
         build_menu: impl FnOnce(Menu) -> Menu,
@@ -60,6 +61,7 @@ impl DropdownMenu {
             cx.notify();
         });
         Self {
+            id: id.into(),
             label: label.into(),
             menu,
             is_open: false,
@@ -76,6 +78,7 @@ impl DropdownMenu {
 
     /// Create a dropdown from a pre-built [`Menu`] entity.
     pub fn from_menu(
+        id: impl Into<SharedString>,
         label: impl Into<SharedString>,
         menu: Entity<Menu>,
         cx: &mut Context<Self>,
@@ -85,6 +88,7 @@ impl DropdownMenu {
             cx.notify();
         });
         Self {
+            id: id.into(),
             label: label.into(),
             menu,
             is_open: false,
@@ -158,7 +162,7 @@ impl Render for DropdownMenu {
             }
         };
 
-        let mut trigger = Button::new("engram-dropdown-trigger", self.label.clone())
+        let mut trigger = Button::new(self.id.clone(), self.label.clone())
             .style(self.style)
             .size(self.size);
 

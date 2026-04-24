@@ -47,10 +47,12 @@
 //! | Enter    | `Confirm`         |
 //! | Escape   | `Cancel`          |
 //!
-//! `Confirm` invokes the selected entry's `on_click` handler with a
-//! synthesized [`ClickEvent::default`] and emits a [`DismissEvent`].
-//! `Cancel` only emits the dismiss. The default key bindings are
-//! installed by [`crate::init`] under the `Menu` key context.
+//! `Confirm` invokes the selected entry's `on_click` handler (no event
+//! payload - the handler is the [`DismissHandler`](crate::traits::DismissHandler)
+//! shape, called identically from mouse click and keyboard confirm) and
+//! emits a [`DismissEvent`]. `Cancel` only emits the dismiss. The default
+//! key bindings are installed by [`crate::init`] under the `Menu` key
+//! context.
 //!
 //! Submenus, search/filter, and the `SelectChild` / `SelectParent`
 //! navigation actions from zed's `ContextMenu` are intentionally out of
@@ -71,7 +73,7 @@ use crate::components::keybinding::KeyBinding;
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::popover::Popover;
 use crate::components::stack::{h_flex, v_flex};
-use crate::traits::ClickHandler;
+use crate::traits::DismissHandler;
 
 // -----------------------------------------------------------------------
 // Actions
@@ -103,7 +105,7 @@ pub enum MenuItem {
         icon: Option<IconName>,
         keybinding: Option<Vec<SharedString>>,
         disabled: bool,
-        on_click: Option<ClickHandler>,
+        on_click: Option<DismissHandler>,
     },
     /// A non-interactive header row, used to title a group of entries.
     Header(SharedString),
@@ -161,7 +163,7 @@ impl Menu {
         mut self,
         id: impl Into<ElementId>,
         label: impl Into<SharedString>,
-        on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+        on_click: impl Fn(&mut Window, &mut App) + 'static,
     ) -> Self {
         self.items.push(MenuItem::Entry {
             id: id.into(),
@@ -180,7 +182,7 @@ impl Menu {
         id: impl Into<ElementId>,
         icon: IconName,
         label: impl Into<SharedString>,
-        on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+        on_click: impl Fn(&mut Window, &mut App) + 'static,
     ) -> Self {
         self.items.push(MenuItem::Entry {
             id: id.into(),
@@ -199,7 +201,7 @@ impl Menu {
         id: impl Into<ElementId>,
         label: impl Into<SharedString>,
         keys: I,
-        on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+        on_click: impl Fn(&mut Window, &mut App) + 'static,
     ) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -337,8 +339,7 @@ impl Menu {
             }) => handler.clone(),
             _ => return,
         };
-        let event = ClickEvent::default();
-        handler(&event, window, cx);
+        handler(window, cx);
         cx.emit(DismissEvent);
     }
 
@@ -433,9 +434,9 @@ impl Render for Menu {
                         .when(!disabled && row_handler.is_some(), |this| {
                             let handler = row_handler.clone().expect("guarded above");
                             this.on_click(cx.listener(
-                                move |menu, event: &ClickEvent, window, cx| {
+                                move |menu, _event: &ClickEvent, window, cx| {
                                     menu.selected_index = Some(ix);
-                                    handler(event, window, cx);
+                                    handler(window, cx);
                                     cx.emit(DismissEvent);
                                 },
                             ))

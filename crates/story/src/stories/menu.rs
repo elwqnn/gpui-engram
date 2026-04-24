@@ -18,19 +18,19 @@ impl MenuStory {
         let menu = cx.new(|cx| {
             Menu::new(cx)
                 .header("File")
-                .entry_with_icon("menu-new", IconName::Plus, "New File", |_, _, _| {})
-                .keybinding_entry("menu-save", "Save", ["Ctrl", "S"], |_, _, _| {})
+                .entry_with_icon("menu-new", IconName::Plus, "New File", |_, _| {})
+                .keybinding_entry("menu-save", "Save", ["Ctrl", "S"], |_, _| {})
                 .keybinding_entry(
                     "menu-saveas",
                     "Save As...",
                     ["Ctrl", "Shift", "S"],
-                    |_, _, _| {},
+                    |_, _| {},
                 )
                 .separator()
                 .header("Edit")
-                .entry("menu-cut", "Cut", |_, _, _| {})
-                .entry("menu-copy", "Copy", |_, _, _| {})
-                .entry("menu-paste", "Paste", |_, _, _| {})
+                .entry("menu-cut", "Cut", |_, _| {})
+                .entry("menu-copy", "Copy", |_, _| {})
+                .entry("menu-paste", "Paste", |_, _| {})
                 .separator()
                 .disabled_entry("menu-disabled", "Unavailable")
         });

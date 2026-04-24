@@ -8,31 +8,43 @@
 //! Like `Tooltip`, `HoverCard` is a view (`impl Render`) so it can be
 //! handed to GPUI's `.tooltip(builder)` method on any stateful element.
 //! The [`HoverCard::build`] helper produces the closure.
+//!
+//! The body is supplied as a builder closure (`Fn(&mut Window, &mut App)
+//! -> AnyElement`) rather than a pre-built element list. The closure is
+//! invoked on every `Render::render` pass, so the card's contents survive
+//! repeated renders (e.g. when the parent view re-notifies). Pre-built
+//! children would be consumed on first render and vanish on the next.
+
+use std::rc::Rc;
 
 use gpui::{
-    AnyElement, AnyView, App, Context, IntoElement, ParentElement, Pixels, Render, SharedString,
-    Styled, Window, div, prelude::*,
+    AnyElement, AnyView, App, Context, IntoElement, Pixels, Render, SharedString, Styled, Window,
+    div, prelude::*,
 };
 use gpui_engram_theme::{ActiveTheme, Radius, Spacing};
-use smallvec::SmallVec;
 
 use crate::components::label::{Label, LabelCommon, LabelSize};
 use crate::components::stack::v_flex;
 use crate::styles::ElevationIndex;
 
+type HoverCardBody = Rc<dyn Fn(&mut Window, &mut App) -> AnyElement + 'static>;
+
 /// A rich hover card for preview content.
 pub struct HoverCard {
     title: Option<SharedString>,
     min_width: Option<Pixels>,
-    children: SmallVec<[AnyElement; 2]>,
+    body: HoverCardBody,
 }
 
 impl HoverCard {
-    pub fn new() -> Self {
+    /// Build a hover card whose body is produced by `body` on every render
+    /// pass. The closure is intentionally re-invoked rather than consumed
+    /// so the card survives repeated renders.
+    pub fn new(body: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self {
         Self {
             title: None,
             min_width: None,
-            children: SmallVec::new(),
+            body: Rc::new(body),
         }
     }
 
@@ -46,11 +58,6 @@ impl HoverCard {
         self
     }
 
-    pub fn child(mut self, child: impl IntoElement) -> Self {
-        self.children.push(child.into_any_element());
-        self
-    }
-
     /// Build a tooltip-builder closure that produces this hover card.
     /// Pass the result directly to gpui's `.tooltip(...)` method.
     pub fn build(
@@ -60,21 +67,11 @@ impl HoverCard {
     }
 }
 
-impl Default for HoverCard {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ParentElement for HoverCard {
-    fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
-        self.children.extend(elements);
-    }
-}
-
 impl Render for HoverCard {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let colors = cx.theme().colors();
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let colors = *cx.theme().colors();
+        let shadow = ElevationIndex::ElevatedSurface.shadow(cx);
+        let body = (self.body)(window, cx);
 
         div()
             .pl(Spacing::XSmall.pixels())
@@ -89,15 +86,15 @@ impl Render for HoverCard {
                     .bg(colors.elevated_surface_background)
                     .border_1()
                     .border_color(colors.border)
-                    .shadow(ElevationIndex::ElevatedSurface.shadow(cx))
-                    .when_some(self.title.take(), |this, title| {
+                    .shadow(shadow)
+                    .when_some(self.title.clone(), |this, title| {
                         this.child(
                             Label::new(title)
                                 .size(LabelSize::Small)
                                 .weight(gpui::FontWeight::SEMIBOLD),
                         )
                     })
-                    .children(self.children.drain(..)),
+                    .child(body),
             )
     }
 }

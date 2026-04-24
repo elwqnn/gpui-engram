@@ -72,19 +72,19 @@ impl Showcase {
         let menu = cx.new(|cx| {
             Menu::new(cx)
                 .header("File")
-                .entry_with_icon("menu-new", IconName::Plus, "New File", |_, _, _| {})
-                .keybinding_entry("menu-save", "Save", ["Ctrl", "S"], |_, _, _| {})
+                .entry_with_icon("menu-new", IconName::Plus, "New File", |_, _| {})
+                .keybinding_entry("menu-save", "Save", ["Ctrl", "S"], |_, _| {})
                 .keybinding_entry(
                     "menu-saveas",
                     "Save As...",
                     ["Ctrl", "Shift", "S"],
-                    |_, _, _| {},
+                    |_, _| {},
                 )
                 .separator()
                 .header("Edit")
-                .entry("menu-cut", "Cut", |_, _, _| {})
-                .entry("menu-copy", "Copy", |_, _, _| {})
-                .entry("menu-paste", "Paste", |_, _, _| {})
+                .entry("menu-cut", "Cut", |_, _| {})
+                .entry("menu-copy", "Copy", |_, _| {})
+                .entry("menu-paste", "Paste", |_, _| {})
                 .separator()
                 .disabled_entry("menu-disabled", "Unavailable")
         });
@@ -314,6 +314,17 @@ impl Render for Showcase {
                             .child(Icon::new(IconName::Settings).size(IconSize::Small))
                             .child(Icon::new(IconName::Settings).size(IconSize::Medium))
                             .child(Icon::new(IconName::Settings).size(IconSize::Large)),
+                    )
+                    // Icon::from_path resolves a path through the active
+                    // AssetSource, letting an app mix engram's curated
+                    // catalogue with its own bundled SVGs.
+                    .child(
+                        h_flex()
+                            .gap(Spacing::Small.pixels())
+                            .items_center()
+                            .child(Icon::from_path("icons/check.svg").color(Color::Accent))
+                            .child(Icon::from_path("icons/star.svg").color(Color::Warning))
+                            .child(Icon::from_path("icons/heart.svg").color(Color::Error)),
                     ),
                 colors,
             )
