@@ -16,13 +16,6 @@ use crate::color_string::{oklch, oklch_to_hsla};
 use crate::colors::{StatusColors, ThemeColors};
 use crate::{Appearance, Theme};
 
-/// Alpha-tinted color - takes an existing [`Hsla`] and stamps a new alpha
-/// on it. Used for the status `_background` / `_border` slots where
-/// engram's long-standing formula is "severity fg at 18% / 55% opacity".
-fn tint(base: Hsla, a: f32) -> Hsla {
-    Hsla { a, ..base }
-}
-
 /// Transparent black. Used for `ghost_element_background` and
 /// `border_transparent` - cheaper than constructing via oklch.
 const TRANSPARENT: Hsla = Hsla {
@@ -109,32 +102,32 @@ pub fn dark() -> Theme {
 
             status: StatusColors {
                 info,
-                info_background: tint(info, 0.18),
-                info_border: tint(info, 0.55),
+                info_background: info.opacity(0.18),
+                info_border: info.opacity(0.55),
 
                 success,
-                success_background: tint(success, 0.18),
-                success_border: tint(success, 0.55),
+                success_background: success.opacity(0.18),
+                success_border: success.opacity(0.55),
 
                 warning,
-                warning_background: tint(warning, 0.18),
-                warning_border: tint(warning, 0.55),
+                warning_background: warning.opacity(0.18),
+                warning_border: warning.opacity(0.55),
 
                 error,
-                error_background: tint(error, 0.18),
-                error_border: tint(error, 0.55),
+                error_background: error.opacity(0.18),
+                error_border: error.opacity(0.55),
 
                 hint: info,
-                hint_background: tint(info, 0.18),
-                hint_border: tint(info, 0.55),
+                hint_background: info.opacity(0.18),
+                hint_border: info.opacity(0.55),
 
                 hidden,
-                hidden_background: tint(hidden, 0.18),
-                hidden_border: tint(hidden, 0.55),
+                hidden_background: hidden.opacity(0.18),
+                hidden_border: hidden.opacity(0.55),
 
                 ignored,
-                ignored_background: tint(ignored, 0.18),
-                ignored_border: tint(ignored, 0.55),
+                ignored_background: ignored.opacity(0.18),
+                ignored_border: ignored.opacity(0.55),
             },
 
             accent,
@@ -212,32 +205,32 @@ pub fn light() -> Theme {
 
             status: StatusColors {
                 info,
-                info_background: tint(info, 0.14),
-                info_border: tint(info, 0.45),
+                info_background: info.opacity(0.14),
+                info_border: info.opacity(0.45),
 
                 success,
-                success_background: tint(success, 0.14),
-                success_border: tint(success, 0.45),
+                success_background: success.opacity(0.14),
+                success_border: success.opacity(0.45),
 
                 warning,
-                warning_background: tint(warning, 0.14),
-                warning_border: tint(warning, 0.45),
+                warning_background: warning.opacity(0.14),
+                warning_border: warning.opacity(0.45),
 
                 error,
-                error_background: tint(error, 0.14),
-                error_border: tint(error, 0.45),
+                error_background: error.opacity(0.14),
+                error_border: error.opacity(0.45),
 
                 hint: info,
-                hint_background: tint(info, 0.14),
-                hint_border: tint(info, 0.45),
+                hint_background: info.opacity(0.14),
+                hint_border: info.opacity(0.45),
 
                 hidden,
-                hidden_background: tint(hidden, 0.14),
-                hidden_border: tint(hidden, 0.45),
+                hidden_background: hidden.opacity(0.14),
+                hidden_border: hidden.opacity(0.45),
 
                 ignored,
-                ignored_background: tint(ignored, 0.14),
-                ignored_border: tint(ignored, 0.45),
+                ignored_background: ignored.opacity(0.14),
+                ignored_border: ignored.opacity(0.45),
             },
 
             accent,
