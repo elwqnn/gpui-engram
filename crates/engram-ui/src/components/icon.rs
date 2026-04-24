@@ -195,6 +195,7 @@ pub enum IconName {
     ListOrdered,
     ListTodo,
     ListTree,
+    LoaderCircle,
     Lock,
     MagnifyingGlass,
     Mail,
